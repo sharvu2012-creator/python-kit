@@ -1,0 +1,13 @@
+{
+"name": "python-kit",
+"version": "1.0.0",
+"description": "Learn Python in Punjabi & English with AI Tutor",
+"private": true,
+"scripts": {
+"dev": "vercel dev",
+"deploy": "vercel --prod"
+},
+"engines": { "node": ">=18" },
+"dependencies": {},
+"devDependencies": {}
+}
