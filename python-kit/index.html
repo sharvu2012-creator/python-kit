@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python Kit - Learn Python in Punjabi & English</title>
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d6efd">
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+<h1>🐍 Python Kit</h1>
+<div class="topbar-actions">
+<select id="langSelect" aria-label="Language">
+<option value="en">English</option>
+<option value="pa">ਪੰਜਾਬੀ</option>
+</select>
+</div>
+</header>
+
+<div class="main">
+<aside class="sidebar" role="navigation" aria-label="Lessons">
+<h2>Lessons</h2>
+<ul id="lessonList" class="lesson-list"></ul>
+</aside>
+
+<main class="content">
+<section class="explanation" aria-labelledby="explanationTitle">
+<h2 id="explanationTitle">Explanation</h2>
+<div id="explanationContent"></div>
+</section>
+
+<section class="code-playground" aria-labelledby="codeTitle">
+<header class="playground-header">
+<h2 id="codeTitle">Code Playground</h2>
+<div class="playground-actions">
+<select id="themeSelect" aria-label="Theme">
+<option value="dark">Dark</option>
+<option value="light">Light</option>
+</select>
+<button id="runBtn" class="btn btn-primary">▶ Run</button>
+<button id="clearBtn" class="btn btn-secondary">Clear</button>
+</div>
+</header>
+<textarea id="codeEditor" class="code-editor" spellcheck="false" placeholder="Write your Python code here..."></textarea>
+<div class="output-area">
+<h3>Output</h3>
+<pre id="outputDisplay" class="output-display" aria-live="polite">Output appears here...</pre>
+</div>
+</section>
+
+<section class="ai-tutor" aria-labelledby="aiTitle">
+<header class="ai-header">
+<h2 id="aiTitle">🤖 Ask AI Tutor</h2>
+</header>
+<div class="ai-chat" id="aiChat" role="log" aria-live="polite"></div>
+<div class="ai-input-area">
+<textarea id="aiInput" class="ai-input" placeholder="Ask a question about this lesson... (max 2000 chars)" rows="3"></textarea>
+<div class="ai-input-actions">
+<span id="aiStatus" class="ai-status" aria-live="polite"></span>
+<button id="aiSendBtn" class="btn btn-primary">Ask AI</button>
+</div>
+</div>
+</section>
+</main>
+</div>
+</div>
+
+<!-- Pyodide -->
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js"></script>
+<script src="lessons.js"></script>
+<script src="app.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
