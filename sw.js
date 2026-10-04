@@ -1,4 +1,4 @@
-const CACHE = 'python-kit-v2'; // bumped: forces refresh of old cached UI
+const CACHE = 'python-kit-v3'; // bumped: hero + FAB + pills + 13 languages
 const ASSETS = [
 '/', '/index.html', '/style.css', '/app.js', '/lessons.js',
 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js'

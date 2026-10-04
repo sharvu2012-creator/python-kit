@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Python Kit - Learn Python in Punjabi & English</title>
+<title>Python Kit - Learn Python in Your Language</title>
 <link rel="stylesheet" href="style.css">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#8b5cf6">
@@ -26,9 +26,21 @@
 <header class="topbar">
 <h1><span class="logo-bubble">🐍</span> Python Kit</h1>
 <div class="topbar-actions">
+<button id="installBtn" class="btn btn-primary btn-install" hidden>📲 Install</button>
 <select id="langSelect" aria-label="Language">
 <option value="en">English</option>
 <option value="pa">ਪੰਜਾਬੀ</option>
+<option value="hi">हिंदी</option>
+<option value="bn">বাংলা</option>
+<option value="te">తెలుగు</option>
+<option value="mr">मराठी</option>
+<option value="ta">தமிழ்</option>
+<option value="gu">ગુજરાતી</option>
+<option value="kn">ಕನ್ನಡ</option>
+<option value="or">ଓଡ଼ିଆ</option>
+<option value="ml">മലയാളം</option>
+<option value="as">অসমীয়া</option>
+<option value="ur">اردو</option>
 </select>
 </div>
 </header>
@@ -40,12 +52,41 @@
 </aside>
 
 <main class="content">
-<section class="explanation" aria-labelledby="explanationTitle">
+
+<!-- 🏠 HERO / HOMEPAGE -->
+<section class="hero reveal">
+<h2 class="hero-title">Learn Python. <span>No setup. No fear.</span></h2>
+<p class="hero-sub">Run real Python right in your browser, get friendly hints from an AI tutor, and learn in your own language — free, forever.</p>
+<div class="hero-grid">
+<div class="hero-card">
+<div class="hero-icon">▶️</div>
+<h3>Run in Browser</h3>
+<p>Real CPython via WebAssembly. Write code, hit Run, see output instantly. Nothing to install.</p>
+</div>
+<div class="hero-card">
+<div class="hero-icon">🤖</div>
+<h3>AI Tutor</h3>
+<p>Stuck? Ask for a hint. The tutor guides you instead of giving away answers.</p>
+</div>
+<div class="hero-card">
+<div class="hero-icon">🌐</div>
+<h3>Your Language</h3>
+<p>Learn in Punjabi or English, and talk to the tutor in 13 languages.</p>
+</div>
+<div class="hero-card" id="installCard">
+<div class="hero-icon">📲</div>
+<h3>Install & Offline</h3>
+<p>Add to your home screen. Lessons and the code runner keep working offline.</p>
+</div>
+</div>
+</section>
+
+<section class="explanation reveal" aria-labelledby="explanationTitle">
 <h2 id="explanationTitle">Explanation</h2>
 <div id="explanationContent"></div>
 </section>
 
-<section class="code-playground" aria-labelledby="codeTitle">
+<section class="code-playground reveal" aria-labelledby="codeTitle">
 <header class="playground-header">
 <h2 id="codeTitle">Code Playground</h2>
 <div class="playground-actions">
@@ -64,10 +105,11 @@
 </div>
 </section>
 
-<section class="ai-tutor" aria-labelledby="aiTitle">
+<section class="ai-tutor reveal" aria-labelledby="aiTitle" id="aiSection">
 <header class="ai-header">
 <h2 id="aiTitle">🤖 Ask AI Tutor</h2>
 </header>
+<div class="ai-pills" id="aiPills"></div>
 <div class="ai-chat" id="aiChat" role="log" aria-live="polite"></div>
 <div class="ai-input-area">
 <textarea id="aiInput" class="ai-input" placeholder="Ask a question about this lesson... (max 2000 chars)" rows="3"></textarea>
@@ -77,8 +119,27 @@
 </div>
 </div>
 </section>
+
+<footer class="site-footer reveal">
+<p>Made with 💜 for learners · Python Kit · Free forever</p>
+</footer>
 </main>
 </div>
+</div>
+
+<!-- 🤖 Floating AI + Feedback button -->
+<div class="fab-wrap">
+<div class="fab-panel" id="fabPanel" hidden>
+<button class="fab-action" id="fabAsk">🤖 Ask AI Tutor</button>
+<button class="fab-action" id="fabFeedback">💬 Send Feedback</button>
+</div>
+<div class="fab-feedback" id="fabFeedbackBox" hidden>
+<h4>💬 Feedback</h4>
+<textarea id="feedbackText" placeholder="Tell us what's good or missing..." rows="3"></textarea>
+<button class="btn btn-primary" id="feedbackSend">Send</button>
+<span id="feedbackDone" class="feedback-done" hidden>Thanks! 💜</span>
+</div>
+<button class="fab" id="fabBtn" aria-label="AI and feedback">🤖</button>
 </div>
 
 <!-- Pyodide -->

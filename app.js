@@ -3,6 +3,20 @@ let currentLessonIndex = 0;
 let currentLang = 'en';
 let pyodide = null;
 let pyodideReady = false;
+let deferredInstallPrompt = null;
+
+const LANG_NAMES = {
+en: 'English', pa: 'ਪੰਜਾਬੀ', hi: 'हिंदी', bn: 'বাংলা', te: 'తెలుగు',
+mr: 'मराठी', ta: 'தமிழ்', gu: 'ગુજરાતી', kn: 'ಕನ್ನಡ', or: 'ଓଡ଼ିଆ',
+ml: 'മലയാളം', as: 'অসমীয়া', ur: 'اردو'
+};
+const AI_PILLS = [
+'💡 Explain this lesson simply',
+'🐛 Debug my code',
+'🔁 Give me a loop example',
+'❓ What is a variable?',
+'🧪 Give me a mini quiz'
+];
 
 // ===== DOM Elements =====
 const lessonList = document.getElementById('lessonList');
@@ -17,13 +31,28 @@ const aiInput = document.getElementById('aiInput');
 const aiSendBtn = document.getElementById('aiSendBtn');
 const aiChat = document.getElementById('aiChat');
 const aiStatus = document.getElementById('aiStatus');
+const installBtn = document.getElementById('installBtn');
+const installCard = document.getElementById('installCard');
+const aiPills = document.getElementById('aiPills');
+const fabBtn = document.getElementById('fabBtn');
+const fabPanel = document.getElementById('fabPanel');
+const fabAsk = document.getElementById('fabAsk');
+const fabFeedback = document.getElementById('fabFeedback');
+const fabFeedbackBox = document.getElementById('fabFeedbackBox');
+const feedbackText = document.getElementById('feedbackText');
+const feedbackSend = document.getElementById('feedbackSend');
+const feedbackDone = document.getElementById('feedbackDone');
 
 // ===== Init =====
 document.addEventListener('DOMContentLoaded', async () => {
 renderLessonList();
+renderPills();
 loadTheme();
 loadLanguage();
 setupEventListeners();
+setupScrollReveal();
+setupInstall();
+setupFab();
 await initPyodide();
 loadLesson(0);
 });
@@ -37,9 +66,6 @@ aiSendBtn.addEventListener('click', sendAIQuestion);
 aiInput.addEventListener('keydown', (e) => {
 if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAIQuestion(); }
 });
-document.querySelectorAll('.lang-btn').forEach(btn => {
-btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
-});
 }
 
 // ===== Lesson List =====
@@ -48,8 +74,9 @@ lessonList.innerHTML = '';
 lessons.forEach((lesson, i) => {
 const li = document.createElement('li');
 li.className = 'lesson-item' + (i === currentLessonIndex ? ' active' : '');
+li.style.animationDelay = (i * 0.05) + 's';
 li.innerHTML = `
-<div class="lesson-title">${lesson.title[currentLang]}</div>
+<div class="lesson-title">${lessonTitleFor(lesson)}</div>
 <div class="lesson-meta">Lesson ${i + 1} of ${lessons.length}</div>
 `;
 li.addEventListener('click', () => loadLesson(i));
@@ -57,35 +84,42 @@ lessonList.appendChild(li);
 });
 }
 
+// ===== Language helpers =====
+function lessonTitleFor(lesson) {
+return currentLang === 'pa' ? lesson.title.pa : lesson.title.en;
+}
+function lessonTextFor(lesson) {
+return currentLang === 'pa' ? lesson.text.pa : lesson.text.en;
+}
+function langNameForAI() {
+return LANG_NAMES[currentLang] || 'English';
+}
+
 // ===== Load Lesson =====
 function loadLesson(index) {
 currentLessonIndex = index;
 const lesson = lessons[index];
 
-// Update sidebar
 document.querySelectorAll('.lesson-item').forEach((li, i) => {
 li.classList.toggle('active', i === index);
 });
 
-// Update explanation
 explanationContent.innerHTML = `
 <div class="lang-toggle">
-<button class="lang-btn ${currentLang === 'en' ? 'active' : ''}" data-lang="en">English</button>
+<button class="lang-btn ${currentLang !== 'pa' ? 'active' : ''}" data-lang="en">English</button>
 <button class="lang-btn ${currentLang === 'pa' ? 'active' : ''}" data-lang="pa">ਪੰਜਾਬੀ</button>
 </div>
-<div class="explanation-text">${lesson.text[currentLang]}</div>
+<div class="explanation-text">${lessonTextFor(lesson)}</div>
 `;
 document.querySelectorAll('.lang-btn').forEach(btn => {
 btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
 });
 
-// Reset code editor with starter
 codeEditor.value = lesson.starter;
 outputDisplay.textContent = 'Output appears here...';
 
-// Clear AI chat
 aiChat.innerHTML = '';
-addAIMessage('assistant', `Ready to help with: ${lesson.title[currentLang]}. Ask me anything!`);
+addAIMessage('assistant', `Ready to help with: ${lessonTitleFor(lesson)}. Ask me anything!`);
 }
 
 // ===== Pyodide Init =====
@@ -134,12 +168,13 @@ langSelect.value = lang;
 document.querySelectorAll('.lang-btn').forEach(btn => {
 btn.classList.toggle('active', btn.dataset.lang === lang);
 });
-loadLesson(currentLessonIndex); // Re-render with new language
+loadLesson(currentLessonIndex);
+saveLanguage();
 }
 
 function loadLanguage() {
 const saved = localStorage.getItem('lang');
-if (saved) setLanguage(saved);
+if (saved && LANG_NAMES[saved]) setLanguage(saved);
 }
 function saveLanguage() { localStorage.setItem('lang', currentLang); }
 
@@ -152,6 +187,21 @@ localStorage.setItem('theme', theme);
 function loadTheme() {
 const saved = localStorage.getItem('theme') || 'dark';
 setTheme(saved);
+}
+
+// ===== AI Quick Pills =====
+function renderPills() {
+aiPills.innerHTML = '';
+AI_PILLS.forEach((text) => {
+const btn = document.createElement('button');
+btn.className = 'ai-pill';
+btn.textContent = text;
+btn.addEventListener('click', () => {
+aiInput.value = text.replace(/^[^\s]+\s/, ''); // strip emoji
+aiInput.focus();
+});
+aiPills.appendChild(btn);
+});
 }
 
 // ===== AI Tutor =====
@@ -171,7 +221,13 @@ try {
 const res = await fetch('/api/tutor', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ question, code, lesson: lesson.title.en, lang: currentLang })
+body: JSON.stringify({
+question,
+code,
+lesson: lesson.title.en,
+lang: currentLang,
+langName: langNameForAI()
+})
 });
 const data = await res.json();
 if (res.ok) {
@@ -199,6 +255,93 @@ function escapeHtml(text) {
 const div = document.createElement('div');
 div.textContent = text;
 return div.innerHTML;
+}
+
+// ===== Scroll Reveal =====
+function setupScrollReveal() {
+const els = document.querySelectorAll('.reveal');
+if (!('IntersectionObserver' in window)) {
+els.forEach(el => el.classList.add('in'));
+return;
+}
+const io = new IntersectionObserver((entries) => {
+entries.forEach((entry) => {
+if (entry.isIntersecting) {
+entry.target.classList.add('in');
+io.unobserve(entry.target);
+}
+});
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+els.forEach(el => io.observe(el));
+}
+
+// ===== PWA Install =====
+function setupInstall() {
+window.addEventListener('beforeinstallprompt', (e) => {
+e.preventDefault();
+deferredInstallPrompt = e;
+installBtn.hidden = false;
+});
+const doInstall = async () => {
+if (deferredInstallPrompt) {
+deferredInstallPrompt.prompt();
+await deferredInstallPrompt.userChoice;
+deferredInstallPrompt = null;
+installBtn.hidden = true;
+} else {
+alert('To install: open your browser menu (⋮) and choose "Install app" or "Add to Home screen".');
+}
+};
+installBtn.addEventListener('click', doInstall);
+if (installCard) installCard.addEventListener('click', doInstall);
+window.addEventListener('appinstalled', () => { installBtn.hidden = true; });
+}
+
+// ===== FAB (AI + Feedback) =====
+function setupFab() {
+const closeAll = () => {
+fabPanel.hidden = true;
+fabFeedbackBox.hidden = true;
+fabBtn.classList.remove('open');
+fabBtn.textContent = '🤖';
+};
+fabBtn.addEventListener('click', (e) => {
+e.stopPropagation();
+const opening = fabPanel.hidden && fabFeedbackBox.hidden;
+closeAll();
+if (opening) {
+fabPanel.hidden = false;
+fabBtn.classList.add('open');
+fabBtn.textContent = '✕';
+}
+});
+fabAsk.addEventListener('click', () => {
+closeAll();
+document.getElementById('aiSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+setTimeout(() => aiInput.focus(), 600);
+});
+fabFeedback.addEventListener('click', (e) => {
+e.stopPropagation();
+fabPanel.hidden = true;
+fabFeedbackBox.hidden = false;
+feedbackDone.hidden = true;
+});
+feedbackSend.addEventListener('click', () => {
+const text = feedbackText.value.trim();
+if (!text) { feedbackText.focus(); return; }
+const subject = encodeURIComponent('Python Kit Feedback');
+const body = encodeURIComponent(text);
+window.location.href = `mailto:?subject=${subject}&body=${body}`;
+feedbackText.value = '';
+feedbackDone.hidden = false;
+setTimeout(closeAll, 1200);
+});
+document.addEventListener('click', (e) => {
+if (!e.target.closest('.fab-wrap')) closeAll();
+});
+document.addEventListener('keydown', (e) => {
+if (e.key === 'Escape') closeAll();
+});
 }
 
 // ===== Service Worker Registration =====
