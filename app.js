@@ -5,6 +5,17 @@ let pyodide = null;
 let pyodideReady = false;
 let deferredInstallPrompt = null;
 
+// ===== Progress (roadmap) =====
+let progress = { completed: [], scores: {}, xp: 0 };
+function loadProgress() {
+try { const p = JSON.parse(localStorage.getItem('pk_progress')); if (p && p.completed) progress = p; } catch (e) {}
+}
+function saveProgress() {
+localStorage.setItem('pk_progress', JSON.stringify(progress));
+}
+function isDone(i) { return progress.completed.includes(i); }
+function isUnlocked(i) { return i === 0 || isDone(i - 1); }
+
 const LANG_NAMES = {
 en: 'English', pa: 'ਪੰਜਾਬੀ', hi: 'हिंदी', bn: 'বাংলা', te: 'తెలుగు',
 mr: 'मराठी', ta: 'தமிழ்', gu: 'ગુજરાતી', kn: 'ಕನ್ನಡ', or: 'ଓଡ଼ିଆ',
@@ -120,6 +131,7 @@ const startLearningBtn = $('startLearningBtn');
 // ===== Init =====
 document.addEventListener('DOMContentLoaded', async () => {
 collectPageNodes();
+loadProgress();
 renderLessonList();
 renderPills();
 loadTheme();
@@ -130,6 +142,7 @@ setupScrollReveal();
 setupFireworks();
 setupInstall();
 setupFab();
+setupQuiz();
 await initPyodide();
 loadLesson(0);
 showView('dashboard');
@@ -156,6 +169,7 @@ document.querySelectorAll('.menu-link').forEach(l => {
 l.classList.toggle('active', l.dataset.view === name);
 });
 closeMenu();
+if (name === 'roadmap') renderRoadmap();
 window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -248,6 +262,16 @@ if (expText && currentLang === langAtCall) expText.textContent = lesson.text.en;
 
 codeEditor.value = lesson.starter;
 outputDisplay.textContent = 'Output appears here...';
+
+// test button state
+const ttb = $('takeTestBtn');
+if (isUnlocked(index)) {
+ttb.disabled = false;
+ttb.innerHTML = isDone(index) ? '🧪 Retake Test' : '🧪 Take Test';
+} else {
+ttb.disabled = true;
+ttb.innerHTML = '🔒 Locked';
+}
 }
 
 function renderLessonListTranslated(translatedTitle, activeIndex) {
@@ -603,6 +627,194 @@ if (!e.target.closest('.fab-wrap')) closeAllPanels();
 document.addEventListener('keydown', (e) => {
 if (e.key === 'Escape') closeAllPanels();
 });
+}
+
+// ===== ROADMAP =====
+function renderRoadmap() {
+const path = $('roadPath');
+path.innerHTML = '';
+
+const total = lessons.length;
+const doneCount = progress.completed.filter(i => i < total).length;
+$('xpValue').textContent = progress.xp;
+$('progressLabel').textContent = `${doneCount} / ${total}`;
+$('progressFill').style.width = (doneCount / total * 100) + '%';
+
+lessons.forEach((lesson, i) => {
+const done = isDone(i);
+const unlocked = isUnlocked(i);
+const node = document.createElement('div');
+node.className = 'road-node ' + (done ? 'done' : unlocked ? 'current' : 'locked');
+node.innerHTML = `
+<div class="road-num">${done ? '✓' : unlocked ? (i + 1) : '🔒'}</div>
+<div class="road-info">
+<div class="road-title">${lesson.title.en}</div>
+<div class="road-sub">${done ? 'Completed' : unlocked ? 'Tap to start' : 'Locked'}</div>
+</div>
+${done && progress.scores[i] != null ? `<div class="road-score-tag">${progress.scores[i]}%</div>` : ''}
+`;
+node.addEventListener('click', () => {
+if (!unlocked) {
+node.classList.remove('shake');
+void node.offsetWidth;
+node.classList.add('shake');
+showTrToastText('🔒 Complete the previous lesson first!');
+return;
+}
+loadLesson(i);
+showView('lessons');
+});
+path.appendChild(node);
+});
+}
+
+function showTrToastText(text) {
+let t = document.getElementById('trToast');
+if (!t) {
+t = document.createElement('div');
+t.id = 'trToast';
+t.className = 'tr-toast';
+document.body.appendChild(t);
+}
+t.textContent = text;
+t.classList.add('show');
+clearTimeout(t._hideTimer);
+t._hideTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ===== QUIZ ENGINE =====
+const quizState = { lesson: -1, q: 0, correct: 0, answered: false };
+
+function setupQuiz() {
+$('takeTestBtn').addEventListener('click', () => openQuiz(currentLessonIndex));
+$('quizClose').addEventListener('click', closeQuiz);
+$('quizNextBtn').addEventListener('click', nextQuestion);
+$('quizRetryBtn').addEventListener('click', () => openQuiz(quizState.lesson));
+$('quizContinueBtn').addEventListener('click', () => { closeQuiz(); showView('roadmap'); });
+$('quizOverlay').addEventListener('click', (e) => { if (e.target === $('quizOverlay')) closeQuiz(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('quizOverlay').hidden) closeQuiz(); });
+}
+
+function openQuiz(lessonIdx) {
+const lesson = lessons[lessonIdx];
+if (!lesson.quiz || !lesson.quiz.length) return;
+if (!isUnlocked(lessonIdx)) {
+showTrToastText('🔒 Complete the previous lesson first!');
+return;
+}
+quizState.lesson = lessonIdx;
+quizState.q = 0;
+quizState.correct = 0;
+quizState.answered = false;
+$('quizTitle').textContent = `🧪 ${lesson.title.en}`;
+$('quizResults').hidden = true;
+$('quizBody').hidden = false;
+renderQuizDots();
+showQuestion();
+$('quizOverlay').hidden = false;
+}
+
+function closeQuiz() { $('quizOverlay').hidden = true; }
+
+function renderQuizDots() {
+const total = lessons[quizState.lesson].quiz.length;
+const wrap = $('quizProgress');
+wrap.innerHTML = '';
+for (let i = 0; i < total; i++) {
+const d = document.createElement('div');
+d.className = 'quiz-dot' + (i === quizState.q ? ' active' : '');
+d.dataset.i = i;
+wrap.appendChild(d);
+}
+}
+
+function showQuestion() {
+const quiz = lessons[quizState.lesson].quiz;
+const item = quiz[quizState.q];
+quizState.answered = false;
+renderQuizDots();
+$('quizQuestion').textContent = item.q;
+$('quizExplain').hidden = true;
+$('quizNextBtn').hidden = true;
+const wrap = $('quizOptions');
+wrap.innerHTML = '';
+item.options.forEach((opt, i) => {
+const btn = document.createElement('button');
+btn.className = 'quiz-opt';
+btn.textContent = opt;
+btn.addEventListener('click', () => selectOption(btn, i));
+wrap.appendChild(btn);
+});
+}
+
+function selectOption(btn, i) {
+if (quizState.answered) return;
+quizState.answered = true;
+const item = lessons[quizState.lesson].quiz[quizState.q];
+const right = i === item.answer;
+if (right) quizState.correct++;
+
+btn.classList.add(right ? 'correct' : 'wrong');
+const opts = $('quizOptions').children;
+for (const o of opts) {
+o.disabled = true;
+if (o.textContent === item.options[item.answer]) o.classList.add('correct');
+}
+
+const dot = $('quizProgress').children[quizState.q];
+if (dot) dot.classList.add(right ? 'right' : 'wrong');
+
+const ex = $('quizExplain');
+ex.textContent = (right ? '✅ Correct! ' : '💡 ') + item.explain;
+ex.hidden = false;
+$('quizNextBtn').textContent = quizState.q === lessons[quizState.lesson].quiz.length - 1 ? 'See Results →' : 'Next →';
+$('quizNextBtn').hidden = false;
+}
+
+function nextQuestion() {
+if (quizState.q < lessons[quizState.lesson].quiz.length - 1) {
+quizState.q++;
+showQuestion();
+} else {
+showResults();
+}
+}
+
+function showResults() {
+const total = lessons[quizState.lesson].quiz.length;
+const pct = Math.round(quizState.correct / total * 100);
+const passed = quizState.correct >= Math.ceil(total * 0.66);
+
+$('quizBody').hidden = true;
+const res = $('quizResults');
+res.hidden = false;
+
+const stars = quizState.correct === total ? 3 : passed ? 2 : quizState.correct > 0 ? 1 : 0;
+$('quizStars').innerHTML = [0, 1, 2].map(i =>
+i < stars ? '⭐' : '<span class="dim">⭐</span>'
+).join('');
+
+$('quizScoreText').textContent = `${quizState.correct} / ${total} correct — ${pct}%`;
+$('quizXpText').textContent = passed
+? `+${quizState.correct * 10} XP earned! ${stars === 3 ? 'Perfect score! 🎉' : ''}`
+: 'Score 67% to pass. Review the lesson and retry!';
+
+if (passed && !isDone(quizState.lesson)) {
+progress.completed.push(quizState.lesson);
+}
+if (passed) {
+const prev = progress.scores[quizState.lesson] || 0;
+progress.scores[quizState.lesson] = Math.max(prev, pct);
+const xpGain = quizState.correct * 10;
+progress.xp += xpGain;
+saveProgress();
+renderLessonList();
+// 🎆 celebrate!
+if (window.innerWidth && document.getElementById('fxCanvas')) {
+setTimeout(() => document.dispatchEvent(new PointerEvent('pointerdown', { clientX: innerWidth / 2, clientY: innerHeight / 3 })), 200);
+}
+}
+$('quizRetryBtn').textContent = passed ? '↻ Retry for better score' : '↻ Retry';
 }
 
 // ===== Service Worker =====

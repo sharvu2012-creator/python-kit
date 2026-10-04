@@ -57,6 +57,7 @@
 </div>
 <div class="menu-links">
 <a class="menu-link active" data-view="dashboard" data-i18n="dashboard">🏠 Dashboard</a>
+<a class="menu-link" data-view="roadmap" data-i18n="roadmap">🗺️ Roadmap</a>
 <a class="menu-link" data-view="lessons" data-i18n="lessons">📚 Lessons</a>
 </div>
 <div class="menu-foot">Made with 💜 for learners</div>
@@ -172,6 +173,19 @@
 </div>
 </section>
 
+<!-- ===== VIEW: ROADMAP ===== -->
+<section id="view-roadmap" class="view" hidden>
+<div class="road-head reveal">
+<h2>🗺️ Your Python Road</h2>
+<div class="road-stats">
+<div class="xp-badge">⭐ <span id="xpValue">0</span> XP</div>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+<span class="progress-label" id="progressLabel">0 / 10</span>
+</div>
+</div>
+<div class="road-path" id="roadPath"></div>
+</section>
+
 <!-- ===== VIEW: LESSONS ===== -->
 <section id="view-lessons" class="view" hidden>
 <div class="lessons-layout">
@@ -184,6 +198,7 @@
 <section class="explanation reveal" aria-labelledby="explanationTitle">
 <h2 id="explanationTitle" data-i18n="explanation">Explanation</h2>
 <div id="explanationContent"></div>
+<button id="takeTestBtn" class="btn btn-primary btn-test">🧪 Take Test</button>
 </section>
 
 <section class="code-playground reveal" aria-labelledby="codeTitle">
@@ -242,6 +257,32 @@
 <!-- two separate fabs -->
 <button class="fab fab-secondary" id="fabFeedbackBtn" aria-label="Feedback">💬</button>
 <button class="fab" id="fabAiBtn" aria-label="AI Tutor">🤖</button>
+</div>
+
+<!-- ===== QUIZ MODAL ===== -->
+<div class="quiz-overlay" id="quizOverlay" hidden>
+<div class="quiz-card" role="dialog" aria-modal="true">
+<div class="quiz-head">
+<h3 id="quizTitle">🧪 Test</h3>
+<button class="icon-btn" id="quizClose" aria-label="Close test">✕</button>
+</div>
+<div class="quiz-progress" id="quizProgress"></div>
+<div id="quizBody">
+<h4 class="quiz-q" id="quizQuestion"></h4>
+<div class="quiz-options" id="quizOptions"></div>
+<p class="quiz-explain" id="quizExplain" hidden></p>
+<button class="btn btn-primary quiz-next" id="quizNextBtn" hidden>Next →</button>
+</div>
+<div class="quiz-results" id="quizResults" hidden>
+<div class="quiz-stars" id="quizStars"></div>
+<h4 id="quizScoreText"></h4>
+<p id="quizXpText"></p>
+<div class="quiz-result-actions">
+<button class="btn btn-secondary" id="quizRetryBtn">↻ Retry</button>
+<button class="btn btn-primary" id="quizContinueBtn">Continue →</button>
+</div>
+</div>
+</div>
 </div>
 
 <!-- 🎆 purple click fireworks layer -->
