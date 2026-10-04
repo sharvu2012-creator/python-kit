@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#8b5cf6">
 </head>
 <body>
-<!-- 🌅 Purple sunrise splash — auto-hides via CSS -->
+<!-- 🌅 Purple sunrise splash -->
 <div id="splash-screen" aria-hidden="true">
 <div class="splash-orb"></div>
 <div class="splash-logo">
@@ -22,9 +22,12 @@
 </div>
 </div>
 
-<div class="app">
+<!-- ===== TOP BAR (kisan-style) ===== -->
 <header class="topbar">
-<h1><span class="logo-bubble">🐍</span> Python Kit</h1>
+<div class="topbar-left">
+<button id="menuBtn" class="icon-btn" aria-label="Menu">☰</button>
+<h1><span class="logo-bubble">🐍</span> <span class="app-name">Python Kit</span></h1>
+</div>
 <div class="topbar-actions">
 <button id="installBtn" class="btn btn-primary btn-install" hidden>📲 Install</button>
 <select id="langSelect" aria-label="Language">
@@ -45,42 +48,74 @@
 </div>
 </header>
 
-<div class="main">
-<aside class="sidebar" role="navigation" aria-label="Lessons">
-<h2>Lessons</h2>
-<ul id="lessonList" class="lesson-list"></ul>
-</aside>
+<!-- ===== SLIDE-IN MENU (kisan-style) ===== -->
+<div id="menuOverlay" class="menu-overlay" hidden></div>
+<nav id="sideMenu" class="side-menu" aria-label="Main menu">
+<div class="menu-head">
+<h2><span class="logo-bubble">🐍</span> Menu</h2>
+<button id="closeMenuBtn" class="icon-btn" aria-label="Close menu">✕</button>
+</div>
+<div class="menu-links">
+<a class="menu-link active" data-view="dashboard">🏠 Dashboard</a>
+<a class="menu-link" data-view="lessons">📚 Lessons</a>
+</div>
+<div class="menu-foot">Made with 💜 for learners</div>
+</nav>
 
-<main class="content">
+<main class="page">
 
-<!-- 🏠 HERO / HOMEPAGE -->
-<section class="hero reveal">
+<!-- ===== VIEW: DASHBOARD ===== -->
+<section id="view-dashboard" class="view">
+<div class="hero reveal">
 <h2 class="hero-title">Learn Python. <span>No setup. No fear.</span></h2>
 <p class="hero-sub">Run real Python right in your browser, get friendly hints from an AI tutor, and learn in your own language — free, forever.</p>
-<div class="hero-grid">
-<div class="hero-card">
+<button class="btn btn-primary btn-cta" id="startLearningBtn">Start Learning →</button>
+</div>
+
+<div class="bento-grid">
+<div class="bento-card reveal">
 <div class="hero-icon">▶️</div>
 <h3>Run in Browser</h3>
 <p>Real CPython via WebAssembly. Write code, hit Run, see output instantly. Nothing to install.</p>
 </div>
-<div class="hero-card">
+<div class="bento-card reveal">
 <div class="hero-icon">🤖</div>
 <h3>AI Tutor</h3>
-<p>Stuck? Ask for a hint. The tutor guides you instead of giving away answers.</p>
+<p>Stuck? Tap the purple bubble at the bottom-left. The tutor gives hints, not answers.</p>
 </div>
-<div class="hero-card">
+<div class="bento-card reveal">
 <div class="hero-icon">🌐</div>
 <h3>Your Language</h3>
-<p>Learn in Punjabi or English, and talk to the tutor in 13 languages.</p>
+<p>Lessons in Punjabi & English. Chat with the tutor in 13 languages.</p>
 </div>
-<div class="hero-card" id="installCard">
+<div class="bento-card reveal" id="installCard">
 <div class="hero-icon">📲</div>
 <h3>Install & Offline</h3>
-<p>Add to your home screen. Lessons and the code runner keep working offline.</p>
+<p>Add to home screen. Lessons and the code runner keep working offline.</p>
+</div>
+</div>
+
+<div class="how reveal">
+<h3>How it works</h3>
+<div class="steps">
+<div class="step"><div class="step-num">1</div><p>Pick a lesson from the menu</p></div>
+<div class="step-arrow">→</div>
+<div class="step"><div class="step-num">2</div><p>Read, then run the code yourself</p></div>
+<div class="step-arrow">→</div>
+<div class="step"><div class="step-num">3</div><p>Stuck? Ask the AI for a hint</p></div>
 </div>
 </div>
 </section>
 
+<!-- ===== VIEW: LESSONS ===== -->
+<section id="view-lessons" class="view" hidden>
+<div class="lessons-layout">
+<aside class="sidebar" role="navigation" aria-label="Lessons">
+<h2>All Lessons</h2>
+<ul id="lessonList" class="lesson-list"></ul>
+</aside>
+
+<div class="lessons-content">
 <section class="explanation reveal" aria-labelledby="explanationTitle">
 <h2 id="explanationTitle">Explanation</h2>
 <div id="explanationContent"></div>
@@ -104,40 +139,45 @@
 <pre id="outputDisplay" class="output-display" aria-live="polite">Output appears here...</pre>
 </div>
 </section>
-
-<section class="ai-tutor reveal" aria-labelledby="aiTitle" id="aiSection">
-<header class="ai-header">
-<h2 id="aiTitle">🤖 Ask AI Tutor</h2>
-</header>
-<div class="ai-pills" id="aiPills"></div>
-<div class="ai-chat" id="aiChat" role="log" aria-live="polite"></div>
-<div class="ai-input-area">
-<textarea id="aiInput" class="ai-input" placeholder="Ask a question about this lesson... (max 2000 chars)" rows="3"></textarea>
-<div class="ai-input-actions">
-<span id="aiStatus" class="ai-status" aria-live="polite"></span>
-<button id="aiSendBtn" class="btn btn-primary">Ask AI</button>
 </div>
 </div>
 </section>
-
-<footer class="site-footer reveal">
-<p>Made with 💜 for learners · Python Kit · Free forever</p>
-</footer>
 </main>
+
+<!-- ===== FAB + CHAT + FEEDBACK (bottom-left) ===== -->
+<div class="fab-wrap">
+<!-- chat panel -->
+<div class="chat-panel" id="chatPanel" hidden>
+<div class="chat-head">
+<h3>🤖 AI Tutor</h3>
+<button class="icon-btn" id="chatClose" aria-label="Close chat">✕</button>
+</div>
+<div class="ai-pills" id="aiPills"></div>
+<div class="ai-chat" id="aiChat" role="log" aria-live="polite"></div>
+<div class="chat-input-row">
+<textarea id="aiInput" class="ai-input" placeholder="Ask a question..." rows="2"></textarea>
+<button id="aiSendBtn" class="btn btn-primary btn-send">➤</button>
+</div>
+<span id="aiStatus" class="ai-status" aria-live="polite"></span>
+</div>
+
+<!-- feedback panel -->
+<div class="chat-panel" id="feedbackPanel" hidden>
+<div class="chat-head">
+<h3>💬 Feedback</h3>
+<button class="icon-btn" id="feedbackClose" aria-label="Close feedback">✕</button>
+</div>
+<textarea id="feedbackText" class="ai-input feedback-text" placeholder="Tell us what's good or missing..." rows="4"></textarea>
+<div class="chat-input-row">
+<span id="feedbackDone" class="feedback-done" hidden>Thanks! 💜</span>
+<button class="btn btn-primary" id="feedbackSend">Send</button>
 </div>
 </div>
 
-<!-- 🤖 Floating AI + Feedback button -->
-<div class="fab-wrap">
+<!-- fab menu -->
 <div class="fab-panel" id="fabPanel" hidden>
-<button class="fab-action" id="fabAsk">🤖 Ask AI Tutor</button>
-<button class="fab-action" id="fabFeedback">💬 Send Feedback</button>
-</div>
-<div class="fab-feedback" id="fabFeedbackBox" hidden>
-<h4>💬 Feedback</h4>
-<textarea id="feedbackText" placeholder="Tell us what's good or missing..." rows="3"></textarea>
-<button class="btn btn-primary" id="feedbackSend">Send</button>
-<span id="feedbackDone" class="feedback-done" hidden>Thanks! 💜</span>
+<button class="fab-action" id="fabAsk">🤖 AI Tutor</button>
+<button class="fab-action" id="fabFeedback">💬 Feedback</button>
 </div>
 <button class="fab" id="fabBtn" aria-label="AI and feedback">🤖</button>
 </div>

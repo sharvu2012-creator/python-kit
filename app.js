@@ -11,37 +11,46 @@ mr: 'मराठी', ta: 'தமிழ்', gu: 'ગુજરાતી', kn: '
 ml: 'മലയാളം', as: 'অসমীয়া', ur: 'اردو'
 };
 const AI_PILLS = [
-'💡 Explain this lesson simply',
+'💡 Explain simply',
 '🐛 Debug my code',
-'🔁 Give me a loop example',
+'🔁 Loop example',
 '❓ What is a variable?',
-'🧪 Give me a mini quiz'
+'🧪 Mini quiz'
 ];
 
-// ===== DOM Elements =====
-const lessonList = document.getElementById('lessonList');
-const explanationContent = document.getElementById('explanationContent');
-const codeEditor = document.getElementById('codeEditor');
-const outputDisplay = document.getElementById('outputDisplay');
-const runBtn = document.getElementById('runBtn');
-const clearBtn = document.getElementById('clearBtn');
-const themeSelect = document.getElementById('themeSelect');
-const langSelect = document.getElementById('langSelect');
-const aiInput = document.getElementById('aiInput');
-const aiSendBtn = document.getElementById('aiSendBtn');
-const aiChat = document.getElementById('aiChat');
-const aiStatus = document.getElementById('aiStatus');
-const installBtn = document.getElementById('installBtn');
-const installCard = document.getElementById('installCard');
-const aiPills = document.getElementById('aiPills');
-const fabBtn = document.getElementById('fabBtn');
-const fabPanel = document.getElementById('fabPanel');
-const fabAsk = document.getElementById('fabAsk');
-const fabFeedback = document.getElementById('fabFeedback');
-const fabFeedbackBox = document.getElementById('fabFeedbackBox');
-const feedbackText = document.getElementById('feedbackText');
-const feedbackSend = document.getElementById('feedbackSend');
-const feedbackDone = document.getElementById('feedbackDone');
+// ===== DOM =====
+const $ = (id) => document.getElementById(id);
+const lessonList = $('lessonList');
+const explanationContent = $('explanationContent');
+const codeEditor = $('codeEditor');
+const outputDisplay = $('outputDisplay');
+const runBtn = $('runBtn');
+const clearBtn = $('clearBtn');
+const themeSelect = $('themeSelect');
+const langSelect = $('langSelect');
+const aiInput = $('aiInput');
+const aiSendBtn = $('aiSendBtn');
+const aiChat = $('aiChat');
+const aiStatus = $('aiStatus');
+const installBtn = $('installBtn');
+const installCard = $('installCard');
+const aiPills = $('aiPills');
+const menuBtn = $('menuBtn');
+const closeMenuBtn = $('closeMenuBtn');
+const sideMenu = $('sideMenu');
+const menuOverlay = $('menuOverlay');
+const fabBtn = $('fabBtn');
+const fabPanel = $('fabPanel');
+const fabAsk = $('fabAsk');
+const fabFeedback = $('fabFeedback');
+const chatPanel = $('chatPanel');
+const chatClose = $('chatClose');
+const feedbackPanel = $('feedbackPanel');
+const feedbackClose = $('feedbackClose');
+const feedbackText = $('feedbackText');
+const feedbackSend = $('feedbackSend');
+const feedbackDone = $('feedbackDone');
+const startLearningBtn = $('startLearningBtn');
 
 // ===== Init =====
 document.addEventListener('DOMContentLoaded', async () => {
@@ -50,11 +59,13 @@ renderPills();
 loadTheme();
 loadLanguage();
 setupEventListeners();
+setupMenu();
 setupScrollReveal();
 setupInstall();
 setupFab();
 await initPyodide();
 loadLesson(0);
+showView('dashboard');
 });
 
 function setupEventListeners() {
@@ -66,6 +77,40 @@ aiSendBtn.addEventListener('click', sendAIQuestion);
 aiInput.addEventListener('keydown', (e) => {
 if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAIQuestion(); }
 });
+startLearningBtn.addEventListener('click', () => showView('lessons'));
+}
+
+// ===== VIEW ROUTER =====
+function showView(name) {
+document.querySelectorAll('.view').forEach(v => { v.hidden = true; });
+const target = $('view-' + name);
+if (target) target.hidden = false;
+document.querySelectorAll('.menu-link').forEach(l => {
+l.classList.toggle('active', l.dataset.view === name);
+});
+closeMenu();
+window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ===== MENU =====
+function setupMenu() {
+menuBtn.addEventListener('click', openMenu);
+closeMenuBtn.addEventListener('click', closeMenu);
+menuOverlay.addEventListener('click', closeMenu);
+document.querySelectorAll('.menu-link').forEach(link => {
+link.addEventListener('click', () => showView(link.dataset.view));
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
+}
+function openMenu() {
+menuOverlay.hidden = false;
+requestAnimationFrame(() => menuOverlay.classList.add('show'));
+sideMenu.classList.add('open');
+}
+function closeMenu() {
+menuOverlay.classList.remove('show');
+sideMenu.classList.remove('open');
+setTimeout(() => { menuOverlay.hidden = true; }, 300);
 }
 
 // ===== Lesson List =====
@@ -84,7 +129,6 @@ lessonList.appendChild(li);
 });
 }
 
-// ===== Language helpers =====
 function lessonTitleFor(lesson) {
 return currentLang === 'pa' ? lesson.title.pa : lesson.title.en;
 }
@@ -117,12 +161,9 @@ btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
 
 codeEditor.value = lesson.starter;
 outputDisplay.textContent = 'Output appears here...';
-
-aiChat.innerHTML = '';
-addAIMessage('assistant', `Ready to help with: ${lessonTitleFor(lesson)}. Ask me anything!`);
 }
 
-// ===== Pyodide Init =====
+// ===== Pyodide =====
 async function initPyodide() {
 outputDisplay.textContent = 'Loading Python...';
 try {
@@ -137,7 +178,6 @@ outputDisplay.textContent = 'Error loading Python: ' + e.message;
 // ===== Run Code =====
 async function runCode() {
 if (!pyodideReady) { outputDisplay.textContent = 'Python not ready yet...'; return; }
-
 const code = codeEditor.value.trim();
 if (!code) return;
 
@@ -150,7 +190,6 @@ let output = '';
 pyodide.setStdout({ batched: (s) => { output += s + '\n'; } });
 pyodide.setStderr({ batched: (s) => { output += 'Error: ' + s + '\n'; } });
 pyodide.setStdin({ stdin: () => prompt('Input:') });
-
 await pyodide.runPythonAsync(code);
 outputDisplay.textContent = output || '(no output)';
 } catch (e) {
@@ -171,7 +210,6 @@ btn.classList.toggle('active', btn.dataset.lang === lang);
 loadLesson(currentLessonIndex);
 saveLanguage();
 }
-
 function loadLanguage() {
 const saved = localStorage.getItem('lang');
 if (saved && LANG_NAMES[saved]) setLanguage(saved);
@@ -189,7 +227,7 @@ const saved = localStorage.getItem('theme') || 'dark';
 setTheme(saved);
 }
 
-// ===== AI Quick Pills =====
+// ===== AI Pills =====
 function renderPills() {
 aiPills.innerHTML = '';
 AI_PILLS.forEach((text) => {
@@ -197,7 +235,7 @@ const btn = document.createElement('button');
 btn.className = 'ai-pill';
 btn.textContent = text;
 btn.addEventListener('click', () => {
-aiInput.value = text.replace(/^[^\s]+\s/, ''); // strip emoji
+aiInput.value = text.replace(/^[^\s]+\s/, '');
 aiInput.focus();
 });
 aiPills.appendChild(btn);
@@ -297,35 +335,44 @@ if (installCard) installCard.addEventListener('click', doInstall);
 window.addEventListener('appinstalled', () => { installBtn.hidden = true; });
 }
 
-// ===== FAB (AI + Feedback) =====
+// ===== FAB + Chat + Feedback =====
 function setupFab() {
-const closeAll = () => {
+const closeAllPanels = () => {
 fabPanel.hidden = true;
-fabFeedbackBox.hidden = true;
+chatPanel.hidden = true;
+feedbackPanel.hidden = true;
 fabBtn.classList.remove('open');
 fabBtn.textContent = '🤖';
 };
 fabBtn.addEventListener('click', (e) => {
 e.stopPropagation();
-const opening = fabPanel.hidden && fabFeedbackBox.hidden;
-closeAll();
-if (opening) {
+if (!chatPanel.hidden || !feedbackPanel.hidden) { closeAllPanels(); return; }
+if (fabPanel.hidden) {
 fabPanel.hidden = false;
 fabBtn.classList.add('open');
 fabBtn.textContent = '✕';
+} else {
+closeAllPanels();
 }
 });
-fabAsk.addEventListener('click', () => {
-closeAll();
-document.getElementById('aiSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-setTimeout(() => aiInput.focus(), 600);
+fabAsk.addEventListener('click', (e) => {
+e.stopPropagation();
+fabPanel.hidden = true;
+chatPanel.hidden = false;
+if (aiChat.children.length === 0) {
+addAIMessage('assistant', 'Hi! I am your Python tutor. Ask me anything about the lesson 🐍');
+}
+setTimeout(() => aiInput.focus(), 250);
 });
 fabFeedback.addEventListener('click', (e) => {
 e.stopPropagation();
 fabPanel.hidden = true;
-fabFeedbackBox.hidden = false;
+feedbackPanel.hidden = false;
 feedbackDone.hidden = true;
+setTimeout(() => feedbackText.focus(), 250);
 });
+chatClose.addEventListener('click', closeAllPanels);
+feedbackClose.addEventListener('click', closeAllPanels);
 feedbackSend.addEventListener('click', () => {
 const text = feedbackText.value.trim();
 if (!text) { feedbackText.focus(); return; }
@@ -334,17 +381,17 @@ const body = encodeURIComponent(text);
 window.location.href = `mailto:?subject=${subject}&body=${body}`;
 feedbackText.value = '';
 feedbackDone.hidden = false;
-setTimeout(closeAll, 1200);
+setTimeout(closeAllPanels, 1200);
 });
 document.addEventListener('click', (e) => {
-if (!e.target.closest('.fab-wrap')) closeAll();
+if (!e.target.closest('.fab-wrap')) closeAllPanels();
 });
 document.addEventListener('keydown', (e) => {
-if (e.key === 'Escape') closeAll();
+if (e.key === 'Escape') closeAllPanels();
 });
 }
 
-// ===== Service Worker Registration =====
+// ===== Service Worker =====
 if ('serviceWorker' in navigator) {
 navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
