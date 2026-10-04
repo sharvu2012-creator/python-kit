@@ -556,15 +556,46 @@ setTimeout(() => feedbackText.focus(), 250);
 });
 chatClose.addEventListener('click', closeAllPanels);
 feedbackClose.addEventListener('click', closeAllPanels);
-feedbackSend.addEventListener('click', () => {
+// ===== Feedback → FormSubmit (works for everyone: no mail app / Gmail / account needed) =====
+feedbackSend.addEventListener('click', async () => {
 const text = feedbackText.value.trim();
 if (!text) { feedbackText.focus(); return; }
-const subject = encodeURIComponent('Python Kit Feedback');
-const body = encodeURIComponent(text);
-window.location.href = `mailto:sharvu2012@gmail.com?subject=${subject}&body=${body}`;
+
+feedbackSend.disabled = true;
+feedbackSend.textContent = 'Sending…';
+feedbackDone.hidden = true;
+
+try {
+const r = await fetch('https://formsubmit.co/ajax/sharvu2012@gmail.com', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+body: JSON.stringify({
+_subject: 'Python Kit Feedback',
+message: text,
+lesson: lessons[currentLessonIndex].title.en,
+language: currentLang,
+_template: 'table',
+_captcha: 'false'
+})
+});
+const data = await r.json();
+if (r.ok && (data.success === 'true' || data.success === true)) {
 feedbackText.value = '';
+feedbackDone.textContent = 'Thanks! Sent 💜';
+feedbackDone.style.color = '';
 feedbackDone.hidden = false;
-setTimeout(closeAllPanels, 1200);
+setTimeout(closeAllPanels, 1600);
+} else {
+throw new Error(data.message || 'send failed');
+}
+} catch (e) {
+feedbackDone.textContent = 'Could not send — check internet and try again.';
+feedbackDone.style.color = 'var(--danger)';
+feedbackDone.hidden = false;
+} finally {
+feedbackSend.disabled = false;
+feedbackSend.textContent = 'Send';
+}
 });
 document.addEventListener('click', (e) => {
 if (!e.target.closest('.fab-wrap')) closeAllPanels();

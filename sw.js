@@ -1,4 +1,4 @@
-const CACHE = 'python-kit-v17'; // race-safe live translation, verified
+const CACHE = 'python-kit-v20'; // feedback via FormSubmit — no mail app/Gmail needed
 const ASSETS = [
 '/', '/index.html', '/style.css', '/app.js', '/lessons.js',
 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js'

@@ -538,6 +538,8 @@ padding: 10px 12px; transition: var(--transition);
 .ai-status { font-size: 12px; color: var(--text-muted); padding: 0 14px 8px; min-height: 18px; flex-shrink: 0; }
 .feedback-text { margin: 14px 16px 0; min-height: 110px; }
 .feedback-done { font-size: 13px; color: var(--secondary); font-weight: 600; }
+.gmail-link { color: var(--primary); font-weight: 700; text-decoration: none; border-bottom: 1px dashed var(--primary); }
+.gmail-link:hover { color: var(--primary-hover); border-bottom-style: solid; }
 #feedbackPanel .chat-input-row { justify-content: space-between; border-top: none; padding-top: 10px; }
 
 /* ============================================
