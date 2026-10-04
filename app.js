@@ -132,6 +132,7 @@ const startLearningBtn = $('startLearningBtn');
 document.addEventListener('DOMContentLoaded', async () => {
 collectPageNodes();
 loadProgress();
+updateStreak();
 renderLessonList();
 renderPills();
 loadTheme();
@@ -514,7 +515,10 @@ if (parts.length) { raf = requestAnimationFrame(tick); }
 else { raf = null; fx.clearRect(0, 0, canvas.width, canvas.height); }
 }
 
-document.addEventListener('pointerdown', (e) => burst(e.clientX, e.clientY));
+document.addEventListener('pointerdown', (e) => {
+burst(e.clientX, e.clientY);
+sfx.firework();
+});
 }
 
 // smooth scrolling: native CSS scroll-behavior only (custom inertia removed — was too slow)
@@ -620,6 +624,163 @@ if (e.key === 'Escape') closeAllPanels();
 });
 }
 
+// ===== 🔊 SFX (synthesized, no files) =====
+const sfx = (() => {
+let ac = null;
+function ctx() {
+if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+if (ac.state === 'suspended') ac.resume();
+return ac;
+}
+function tone(freq, dur, type = 'sine', vol = 0.11, when = 0) {
+try {
+const a = ctx();
+const o = a.createOscillator();
+const g = a.createGain();
+o.type = type; o.frequency.value = freq;
+const t0 = a.currentTime + when;
+g.gain.setValueAtTime(0, t0);
+g.gain.linearRampToValueAtTime(vol, t0 + 0.012);
+g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+o.connect(g).connect(a.destination);
+o.start(t0); o.stop(t0 + dur + 0.03);
+} catch (e) {}
+}
+function noise(dur = 0.28, vol = 0.07) {
+try {
+const a = ctx();
+const n = Math.floor(a.sampleRate * dur);
+const buf = a.createBuffer(1, n, a.sampleRate);
+const d = buf.getChannelData(0);
+for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+const s = a.createBufferSource(); s.buffer = buf;
+const g = a.createGain(); g.gain.value = vol;
+s.connect(g).connect(a.destination); s.start();
+} catch (e) {}
+}
+return {
+click: () => tone(600, 0.06, 'square', 0.05),
+correct: () => { tone(660, 0.09); tone(880, 0.13, 'sine', 0.11, 0.08); },
+wrong: () => tone(170, 0.22, 'sawtooth', 0.09),
+pass: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.17, 'sine', 0.11, i * 0.09)),
+firework: () => noise(),
+complete: () => [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, 0.22, 'sine', 0.11, i * 0.11))
+};
+})();
+
+// ===== 🔥 DAILY STREAK =====
+function updateStreak() {
+const today = new Date().toISOString().slice(0, 10);
+let s = { last: '', count: 0 };
+try { const saved = JSON.parse(localStorage.getItem('pk_streak')); if (saved && saved.last) s = saved; } catch (e) {}
+if (s.last !== today) {
+const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+s.count = (s.last === yesterday) ? s.count + 1 : 1;
+s.last = today;
+localStorage.setItem('pk_streak', JSON.stringify(s));
+}
+const badge = $('streakBadge');
+if (badge) {
+$('streakCount').textContent = s.count;
+badge.hidden = s.count === 0;
+badge.title = s.count + ' day streak!';
+}
+}
+
+// ===== 🎓 CERTIFICATE + 📤 SHARE CARD =====
+function roundRectStroke(x, px, py, w, h, r) {
+x.beginPath();
+x.moveTo(px + r, py);
+x.arcTo(px + w, py, px + w, py + h, r);
+x.arcTo(px + w, py + h, px, py + h, r);
+x.arcTo(px, py + h, px, py, r);
+x.arcTo(px, py, px + w, py, r);
+x.closePath(); x.stroke();
+}
+function downloadCanvas(c, filename) {
+const a = document.createElement('a');
+a.href = c.toDataURL('image/png');
+a.download = filename;
+a.click();
+}
+function drawCertificate(name) {
+const c = document.createElement('canvas');
+c.width = 1600; c.height = 1131;
+const x = c.getContext('2d');
+const g = x.createLinearGradient(0, 0, 1600, 1131);
+g.addColorStop(0, '#241547'); g.addColorStop(0.5, '#150e2e'); g.addColorStop(1, '#0f0a1e');
+x.fillStyle = g; x.fillRect(0, 0, 1600, 1131);
+x.fillStyle = 'rgba(167,139,250,0.08)';
+for (let gx = 44; gx < 1600; gx += 48) for (let gy = 44; gy < 1131; gy += 48) {
+x.beginPath(); x.arc(gx, gy, 1.5, 0, 7); x.fill();
+}
+x.strokeStyle = '#8b5cf6'; x.lineWidth = 8; roundRectStroke(x, 50, 50, 1500, 1031, 28);
+x.strokeStyle = 'rgba(196,181,253,0.5)'; x.lineWidth = 2; roundRectStroke(x, 70, 70, 1460, 991, 22);
+x.textAlign = 'center';
+x.font = '90px serif'; x.fillText('🐍', 800, 195);
+x.fillStyle = '#ede9fe'; x.font = '800 62px "Segoe UI", sans-serif';
+x.fillText('CERTIFICATE', 800, 315);
+x.fillStyle = '#a78bfa'; x.font = '600 28px "Segoe UI", sans-serif';
+x.fillText('OF COMPLETION', 800, 360);
+x.strokeStyle = '#8b5cf6'; x.lineWidth = 2;
+x.beginPath(); x.moveTo(550, 395); x.lineTo(1050, 395); x.stroke();
+x.fillStyle = '#a79fc7'; x.font = '400 25px "Segoe UI", sans-serif';
+x.fillText('This certificate is proudly presented to', 800, 475);
+const grad = x.createLinearGradient(400, 0, 1200, 0);
+grad.addColorStop(0, '#c4b5fd'); grad.addColorStop(1, '#8b5cf6');
+x.fillStyle = grad; x.font = '800 74px "Segoe UI", sans-serif';
+x.fillText(name, 800, 570);
+x.strokeStyle = 'rgba(196,181,253,0.6)';
+x.beginPath(); x.moveTo(500, 598); x.lineTo(1100, 598); x.stroke();
+x.fillStyle = '#a79fc7'; x.font = '400 25px "Segoe UI", sans-serif';
+x.fillText('for completing all 10 lessons of Python Kit', 800, 668);
+x.fillText('and mastering the fundamentals of Python programming', 800, 708);
+x.fillStyle = '#ede9fe'; x.font = '700 30px "Segoe UI", sans-serif';
+x.fillText('⭐ ' + progress.xp + ' XP Earned', 800, 788);
+const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+x.fillStyle = '#a79fc7'; x.font = '400 22px "Segoe UI", sans-serif';
+x.fillText(date, 800, 838);
+x.strokeStyle = 'rgba(196,181,253,0.5)';
+x.beginPath(); x.moveTo(1150, 950); x.lineTo(1400, 950); x.stroke();
+x.fillStyle = '#a79fc7'; x.font = 'italic 24px "Segoe UI", sans-serif';
+x.fillText('Python Kit', 1275, 928);
+x.fillStyle = '#7c7398'; x.font = '400 18px "Segoe UI", sans-serif';
+x.fillText('python-kit.vercel.app', 1275, 974);
+for (let i = 0; i < 26; i++) {
+const fx = 120 + Math.random() * 220, fy = 90 + Math.random() * 200;
+x.fillStyle = ['#a78bfa', '#c4b5fd', '#8b5cf6'][i % 3];
+x.globalAlpha = 0.5 + Math.random() * 0.5;
+x.beginPath(); x.arc(fx, fy, 2 + Math.random() * 3, 0, 7); x.fill();
+}
+x.globalAlpha = 1;
+return c;
+}
+function drawShareCard(lessonTitle, pct, starsCount) {
+const c = document.createElement('canvas');
+c.width = 1200; c.height = 630;
+const x = c.getContext('2d');
+const g = x.createLinearGradient(0, 0, 1200, 630);
+g.addColorStop(0, '#4c1d95'); g.addColorStop(1, '#0f0a1e');
+x.fillStyle = g; x.fillRect(0, 0, 1200, 630);
+const rg = x.createRadialGradient(600, 260, 20, 600, 260, 300);
+rg.addColorStop(0, 'rgba(196,181,253,0.35)'); rg.addColorStop(1, 'rgba(196,181,253,0)');
+x.fillStyle = rg; x.fillRect(0, 0, 1200, 630);
+x.textAlign = 'center';
+x.font = '78px serif'; x.fillText('🐍', 600, 128);
+x.fillStyle = '#a79fc7'; x.font = '600 30px "Segoe UI", sans-serif';
+x.fillText('I scored', 600, 215);
+const grad = x.createLinearGradient(300, 0, 900, 0);
+grad.addColorStop(0, '#c4b5fd'); grad.addColorStop(1, '#8b5cf6');
+x.fillStyle = grad; x.font = '800 128px "Segoe UI", sans-serif';
+x.fillText(pct + '%', 600, 345);
+x.font = '46px serif'; x.fillText(starsCount > 0 ? '⭐'.repeat(starsCount) : '💜', 600, 420);
+x.fillStyle = '#ede9fe'; x.font = '700 33px "Segoe UI", sans-serif';
+x.fillText('on "' + lessonTitle + '"', 600, 488);
+x.fillStyle = '#a78bfa'; x.font = '600 24px "Segoe UI", sans-serif';
+x.fillText('🐍 Python Kit · Learn free at python-kit.vercel.app', 600, 575);
+return c;
+}
+
 // ===== ROADMAP =====
 function renderRoadmap() {
 const path = $('roadPath');
@@ -630,6 +791,7 @@ const doneCount = progress.completed.filter(i => i < total).length;
 $('xpValue').textContent = progress.xp;
 $('progressLabel').textContent = `${doneCount} / ${total}`;
 $('progressFill').style.width = (doneCount / total * 100) + '%';
+$('certBtn').hidden = doneCount < total;
 
 lessons.forEach((lesson, i) => {
 const done = isDone(i);
@@ -674,7 +836,7 @@ t._hideTimer = setTimeout(() => t.classList.remove('show'), 2000);
 }
 
 // ===== QUIZ ENGINE =====
-const quizState = { lesson: -1, q: 0, correct: 0, answered: false };
+const quizState = { lesson: -1, q: 0, mcqCorrect: 0, codePassed: 0, answered: false };
 
 function setupQuiz() {
 $('takeTestBtn').addEventListener('click', () => openQuiz(currentLessonIndex));
@@ -684,6 +846,17 @@ $('quizRetryBtn').addEventListener('click', () => openQuiz(quizState.lesson));
 $('quizContinueBtn').addEventListener('click', () => { closeQuiz(); showView('roadmap'); });
 $('quizOverlay').addEventListener('click', (e) => { if (e.target === $('quizOverlay')) closeQuiz(); });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('quizOverlay').hidden) closeQuiz(); });
+// code test step
+$('runTestsBtn').addEventListener('click', runCodeTests);
+$('codeContinueBtn').addEventListener('click', showResults);
+// share
+$('shareBtn').addEventListener('click', shareResult);
+// certificate
+$('certBtn').addEventListener('click', () => { $('certOverlay').hidden = false; setTimeout(() => $('certName').focus(), 200); });
+$('certClose').addEventListener('click', () => { $('certOverlay').hidden = true; });
+$('certOverlay').addEventListener('click', (e) => { if (e.target === $('certOverlay')) $('certOverlay').hidden = true; });
+$('certGenBtn').addEventListener('click', generateCertificate);
+$('certName').addEventListener('keydown', (e) => { if (e.key === 'Enter') generateCertificate(); });
 }
 
 function openQuiz(lessonIdx) {
@@ -695,14 +868,17 @@ return;
 }
 quizState.lesson = lessonIdx;
 quizState.q = 0;
-quizState.correct = 0;
+quizState.mcqCorrect = 0;
+quizState.codePassed = 0;
 quizState.answered = false;
 $('quizTitle').textContent = `🧪 ${lesson.title.en}`;
 $('quizResults').hidden = true;
+$('quizCodeStep').hidden = true;
 $('quizBody').hidden = false;
 renderQuizDots();
 showQuestion();
 $('quizOverlay').hidden = false;
+sfx.click();
 }
 
 function closeQuiz() { $('quizOverlay').hidden = true; }
@@ -743,7 +919,7 @@ if (quizState.answered) return;
 quizState.answered = true;
 const item = lessons[quizState.lesson].quiz[quizState.q];
 const right = i === item.answer;
-if (right) quizState.correct++;
+if (right) { quizState.mcqCorrect++; sfx.correct(); } else { sfx.wrong(); }
 
 btn.classList.add(right ? 'correct' : 'wrong');
 const opts = $('quizOptions').children;
@@ -758,7 +934,9 @@ if (dot) dot.classList.add(right ? 'right' : 'wrong');
 const ex = $('quizExplain');
 ex.textContent = (right ? '✅ Correct! ' : '💡 ') + item.explain;
 ex.hidden = false;
-$('quizNextBtn').textContent = quizState.q === lessons[quizState.lesson].quiz.length - 1 ? 'See Results →' : 'Next →';
+const hasMore = quizState.q < lessons[quizState.lesson].quiz.length - 1;
+const hasCode = !!lessons[quizState.lesson].codeChallenge;
+$('quizNextBtn').textContent = hasMore ? 'Next →' : hasCode ? '💻 Code Challenge →' : 'See Results →';
 $('quizNextBtn').hidden = false;
 }
 
@@ -766,28 +944,105 @@ function nextQuestion() {
 if (quizState.q < lessons[quizState.lesson].quiz.length - 1) {
 quizState.q++;
 showQuestion();
+} else if (lessons[quizState.lesson].codeChallenge) {
+showCodeStep();
 } else {
 showResults();
 }
 }
 
+// ===== 💻 CODE CHALLENGE (graded by real Pyodide) =====
+function showCodeStep() {
+const cc = lessons[quizState.lesson].codeChallenge;
+$('quizBody').hidden = true;
+$('quizCodeStep').hidden = false;
+$('codePrompt').textContent = '💻 ' + cc.prompt;
+$('codeAnswer').value = cc.starter;
+$('testResults').innerHTML = '';
+$('codeContinueBtn').hidden = true;
+$('runTestsBtn').disabled = false;
+$('runTestsBtn').textContent = '▶ Run Tests';
+renderQuizDots();
+}
+
+async function runCodeTests() {
+const cc = lessons[quizState.lesson].codeChallenge;
+const code = $('codeAnswer').value;
+const wrap = $('testResults');
+const btn = $('runTestsBtn');
+
+if (!pyodideReady) {
+wrap.innerHTML = '<div class="test-row test-info">⏳ Python is still loading — try again in a few seconds…</div>';
+return;
+}
+
+btn.disabled = true;
+btn.textContent = 'Running…';
+wrap.innerHTML = '';
+quizState.codePassed = 0;
+
+for (let i = 0; i < cc.tests.length; i++) {
+const t = cc.tests[i];
+const row = document.createElement('div');
+row.className = 'test-row';
+row.innerHTML = `<span class="test-label">Test ${i + 1}</span> <span class="test-wait">⏳</span>`;
+wrap.appendChild(row);
+}
+
+for (let i = 0; i < cc.tests.length; i++) {
+const t = cc.tests[i];
+const row = wrap.children[i];
+let pass = false, err = '';
+try {
+if (t.stdout) {
+let out = '';
+pyodide.setStdout({ batched: (s) => { out += s + '\n'; } });
+await pyodide.runPythonAsync(code);
+pass = out.includes(t.stdout);
+err = pass ? '' : 'Output was: ' + (out.trim().slice(0, 60) || '(nothing)');
+} else {
+await pyodide.runPythonAsync(code);
+const result = await pyodide.runPythonAsync(t.expr);
+pass = !!result;
+err = pass ? '' : t.expr + ' → False';
+}
+} catch (e) {
+err = String(e.message || e).split('\n').slice(-2)[0].slice(0, 90);
+}
+if (pass) quizState.codePassed++;
+row.innerHTML = `<span class="test-label">${t.stdout ? 'Output check' : '<code>' + t.expr + '</code>'}</span> <span class="${pass ? 'test-pass' : 'test-fail'}">${pass ? '✓' : '✗ ' + err}</span>`;
+row.classList.add(pass ? 'test-row-pass' : 'test-row-fail');
+}
+
+btn.textContent = '↻ Run Again';
+btn.disabled = false;
+$('codeContinueBtn').hidden = false;
+if (quizState.codePassed === cc.tests.length) sfx.correct();
+}
+
 function showResults() {
-const total = lessons[quizState.lesson].quiz.length;
-const pct = Math.round(quizState.correct / total * 100);
-const passed = quizState.correct >= Math.ceil(total * 0.66);
+const lesson = lessons[quizState.lesson];
+const cc = lesson.codeChallenge;
+const total = lesson.quiz.length + (cc ? cc.tests.length : 0);
+const correct = quizState.mcqCorrect + quizState.codePassed;
+const pct = Math.round(correct / total * 100);
+const passed = correct >= Math.ceil(total * 0.66);
 
 $('quizBody').hidden = true;
+$('quizCodeStep').hidden = true;
 const res = $('quizResults');
 res.hidden = false;
 
-const stars = quizState.correct === total ? 3 : passed ? 2 : quizState.correct > 0 ? 1 : 0;
+const stars = correct === total ? 3 : passed ? 2 : correct > 0 ? 1 : 0;
+quizState.lastPct = pct;
+quizState.lastStars = stars;
 $('quizStars').innerHTML = [0, 1, 2].map(i =>
 i < stars ? '⭐' : '<span class="dim">⭐</span>'
 ).join('');
 
-$('quizScoreText').textContent = `${quizState.correct} / ${total} correct — ${pct}%`;
+$('quizScoreText').textContent = `${correct} / ${total} correct — ${pct}%`;
 $('quizXpText').textContent = passed
-? `+${quizState.correct * 10} XP earned! ${stars === 3 ? 'Perfect score! 🎉' : ''}`
+? `+${correct * 5} XP earned! ${stars === 3 ? 'Perfect score! 🎉' : ''}`
 : 'Score 67% to pass. Review the lesson and retry!';
 
 if (passed && !isDone(quizState.lesson)) {
@@ -796,16 +1051,32 @@ progress.completed.push(quizState.lesson);
 if (passed) {
 const prev = progress.scores[quizState.lesson] || 0;
 progress.scores[quizState.lesson] = Math.max(prev, pct);
-const xpGain = quizState.correct * 10;
-progress.xp += xpGain;
+progress.xp += correct * 5;
 saveProgress();
 renderLessonList();
-// 🎆 celebrate!
-if (window.innerWidth && document.getElementById('fxCanvas')) {
+updateStreak();
+sfx.pass();
 setTimeout(() => document.dispatchEvent(new PointerEvent('pointerdown', { clientX: innerWidth / 2, clientY: innerHeight / 3 })), 200);
 }
-}
 $('quizRetryBtn').textContent = passed ? '↻ Retry for better score' : '↻ Retry';
+}
+
+// ===== 📤 SHARE RESULT =====
+function shareResult() {
+const lesson = lessons[quizState.lesson];
+const c = drawShareCard(lesson.title.en, quizState.lastPct || 0, quizState.lastStars || 0);
+downloadCanvas(c, 'python-kit-score.png');
+sfx.click();
+}
+
+// ===== 🎓 CERTIFICATE =====
+function generateCertificate() {
+const name = $('certName').value.trim() || 'Python Learner';
+const c = drawCertificate(name);
+downloadCanvas(c, 'python-kit-certificate.png');
+sfx.complete();
+showTrToastText('🎓 Certificate downloaded!');
+$('certOverlay').hidden = true;
 }
 
 // ===== Service Worker =====

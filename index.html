@@ -29,6 +29,7 @@
 <h1><span class="logo-bubble">🐍</span> <span class="app-name">Python Kit</span></h1>
 </div>
 <div class="topbar-actions">
+<span class="streak-badge" id="streakBadge" hidden>🔥 <span id="streakCount">0</span></span>
 <button id="installBtn" class="btn btn-primary btn-install" data-i18n="install" hidden>📲 Install</button>
 <select id="langSelect" aria-label="Language">
 <option value="en">English</option>
@@ -181,6 +182,7 @@
 <div class="xp-badge">⭐ <span id="xpValue">0</span> XP</div>
 <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
 <span class="progress-label" id="progressLabel">0 / 10</span>
+<button class="btn btn-primary cert-btn" id="certBtn" hidden>🎓 Get Certificate</button>
 </div>
 </div>
 <div class="road-path" id="roadPath"></div>
@@ -273,14 +275,37 @@
 <p class="quiz-explain" id="quizExplain" hidden></p>
 <button class="btn btn-primary quiz-next" id="quizNextBtn" hidden>Next →</button>
 </div>
+<div id="quizCodeStep" hidden>
+<h4 class="quiz-q" id="codePrompt"></h4>
+<textarea id="codeAnswer" class="code-editor quiz-code" spellcheck="false"></textarea>
+<button class="btn btn-primary" id="runTestsBtn">▶ Run Tests</button>
+<div class="test-results" id="testResults"></div>
+<button class="btn btn-primary quiz-next" id="codeContinueBtn" hidden>Continue →</button>
+</div>
 <div class="quiz-results" id="quizResults" hidden>
 <div class="quiz-stars" id="quizStars"></div>
 <h4 id="quizScoreText"></h4>
 <p id="quizXpText"></p>
 <div class="quiz-result-actions">
 <button class="btn btn-secondary" id="quizRetryBtn">↻ Retry</button>
+<button class="btn btn-secondary" id="shareBtn">📤 Share</button>
 <button class="btn btn-primary" id="quizContinueBtn">Continue →</button>
 </div>
+</div>
+</div>
+</div>
+
+<!-- ===== CERTIFICATE MODAL ===== -->
+<div class="quiz-overlay" id="certOverlay" hidden>
+<div class="quiz-card cert-card" role="dialog" aria-modal="true">
+<div class="quiz-head">
+<h3>🎓 Certificate of Completion</h3>
+<button class="icon-btn" id="certClose" aria-label="Close">✕</button>
+</div>
+<div class="cert-body">
+<p>You finished all 10 lessons! Enter your name for your official certificate:</p>
+<input type="text" id="certName" class="cert-name" placeholder="Your name" maxlength="40">
+<button class="btn btn-primary" id="certGenBtn">🎓 Generate & Download</button>
 </div>
 </div>
 </div>

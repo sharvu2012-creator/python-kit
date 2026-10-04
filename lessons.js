@@ -181,6 +181,96 @@ quiz: [
 }
 ];
 
+// ===== CODE CHALLENGES (graded by real Pyodide execution) =====
+lessons[0].codeChallenge = {
+prompt: "Print exactly this line: Hello, Python!",
+starter: '# Print exactly: Hello, Python!\n',
+tests: [
+{ stdout: "Hello, Python!" }
+]
+};
+lessons[1].codeChallenge = {
+prompt: "Write a function double(n) that returns n multiplied by 2.",
+starter: 'def double(n):\n    # your code here\n    pass',
+tests: [
+{ expr: "double(4) == 8" },
+{ expr: "double(7) == 14" },
+{ expr: "double(-3) == -6" }
+]
+};
+lessons[2].codeChallenge = {
+prompt: "Write a function add(a, b) that returns the sum of a and b.",
+starter: 'def add(a, b):\n    # your code here\n    pass',
+tests: [
+{ expr: "add(2, 3) == 5" },
+{ expr: "add(-1, 1) == 0" },
+{ expr: "add(10, 20) == 30" }
+]
+};
+lessons[3].codeChallenge = {
+prompt: 'Write a function is_adult(age) that returns "adult" if age is 18 or more, otherwise "minor".',
+starter: 'def is_adult(age):\n    # your code here\n    pass',
+tests: [
+{ expr: 'is_adult(18) == "adult"' },
+{ expr: 'is_adult(17) == "minor"' },
+{ expr: 'is_adult(65) == "adult"' }
+]
+};
+lessons[4].codeChallenge = {
+prompt: "Write a function countdown(n) that returns a list counting down from n to 1. Example: countdown(3) → [3, 2, 1]",
+starter: 'def countdown(n):\n    # your code here\n    pass',
+tests: [
+{ expr: "countdown(3) == [3, 2, 1]" },
+{ expr: "countdown(5) == [5, 4, 3, 2, 1]" },
+{ expr: "countdown(1) == [1]" }
+]
+};
+lessons[5].codeChallenge = {
+prompt: "Write a function first(items) that returns the first item of a list.",
+starter: 'def first(items):\n    # your code here\n    pass',
+tests: [
+{ expr: "first([5, 6, 7]) == 5" },
+{ expr: 'first(["a", "b"]) == "a"' },
+{ expr: "first([99]) == 99" }
+]
+};
+lessons[6].codeChallenge = {
+prompt: 'Write a function shout(text) that returns the text in UPPERCASE with an exclamation mark. Example: shout("hey") → "HEY!"',
+starter: 'def shout(text):\n    # your code here\n    pass',
+tests: [
+{ expr: 'shout("hey") == "HEY!"' },
+{ expr: 'shout("python") == "PYTHON!"' },
+{ expr: 'shout("wow") == "WOW!"' }
+]
+};
+lessons[7].codeChallenge = {
+prompt: "Write a function square(x) that returns x squared (x * x).",
+starter: 'def square(x):\n    # your code here\n    pass',
+tests: [
+{ expr: "square(9) == 81" },
+{ expr: "square(3) == 9" },
+{ expr: "square(-4) == 16" }
+]
+};
+lessons[8].codeChallenge = {
+prompt: 'Write a function get_age(person) that returns the value of the "age" key from a dictionary.',
+starter: 'def get_age(person):\n    # your code here\n    pass',
+tests: [
+{ expr: 'get_age({"age": 21}) == 21' },
+{ expr: 'get_age({"age": 7, "name": "Sam"}) == 7' },
+{ expr: 'get_age({"name": "A", "age": 99}) == 99' }
+]
+};
+lessons[9].codeChallenge = {
+prompt: "Write a function roll() that returns a random integer from 1 to 6 (a dice roll) using the random module.",
+starter: 'import random\n\ndef roll():\n    # your code here\n    pass',
+tests: [
+{ expr: "1 <= roll() <= 6" },
+{ expr: "1 <= roll() <= 6" },
+{ expr: "isinstance(roll(), int)" }
+]
+};
+
 // Export for Node.js if needed
 if (typeof module !== 'undefined' && module.exports) {
 module.exports = lessons;
