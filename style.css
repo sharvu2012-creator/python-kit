@@ -541,6 +541,24 @@ padding: 10px 12px; transition: var(--transition);
 #feedbackPanel .chat-input-row { justify-content: space-between; border-top: none; padding-top: 10px; }
 
 /* ============================================
+   🌐 TRANSLATE TOAST
+   ============================================ */
+.tr-toast {
+position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(80px);
+background: rgba(23,13,48,0.95);
+border: 1px solid var(--border);
+color: var(--text);
+font-size: 13px; font-weight: 600;
+padding: 9px 18px; border-radius: 999px;
+box-shadow: var(--shadow-soft);
+z-index: 800; opacity: 0;
+transition: transform 0.3s ease, opacity 0.3s ease;
+pointer-events: none;
+}
+.tr-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+[data-theme="light"] .tr-toast { background: rgba(255,255,255,0.95); }
+
+/* ============================================
    📜 MISC
    ============================================ */
 ::-webkit-scrollbar { width: 7px; height: 7px; }

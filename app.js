@@ -18,6 +18,73 @@ const AI_PILLS = [
 '🧪 Mini quiz'
 ];
 
+// ===== UI translations (13 languages) =====
+const I18N = {
+en: { menu:'Menu', dashboard:'🏠 Dashboard', lessons:'📚 Lessons', allLessons:'All Lessons', explanation:'Explanation', playground:'Code Playground', run:'▶ Run', clear:'Clear', output:'Output', dark:'Dark', light:'Light', install:'📲 Install', aiTutor:'🤖 AI Tutor', askPh:'Ask a question...', send:'Send', feedback:'💬 Feedback', feedbackPh:"Tell us what's good or missing...", startLearning:'Start Learning →', howItWorks:'How it works', lessonOf:'Lesson {n} of {t}' },
+pa: { menu:'ਮੈਨੂ', dashboard:'🏠 ਡੈਸ਼ਬੋਰਡ', lessons:'📚 ਪਾਠ', allLessons:'ਸਾਰੇ ਪਾਠ', explanation:'ਵਿਆਖਿਆ', playground:'ਕੋਡ ਮੈਦਾਨ', run:'▶ ਚਲਾਓ', clear:'ਸਾਫ਼ ਕਰੋ', output:'ਆਉਟਪੁੱਟ', dark:'ਡਾਰਕ', light:'ਲਾਈਟ', install:'📲 ਇੰਸਟਾਲ', aiTutor:'🤖 ਏਆਈ ਟਿਊਟਰ', askPh:'ਸਵਾਲ ਪੁੱਛੋ...', send:'ਭੇਜੋ', feedback:'💬 ਸੁਝਾਅ', feedbackPh:'ਦੱਸੋ ਕੀ ਚੰਗਾ ਹੈ ਜਾਂ ਕੀ ਘੱਟ ਹੈ...', startLearning:'ਸਿੱਖਣਾ ਸ਼ੁਰੂ ਕਰੋ →', howItWorks:'ਇਹ ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ', lessonOf:'ਪਾਠ {n} / {t}' },
+hi: { menu:'मेनू', dashboard:'🏠 डैशबोर्ड', lessons:'📚 पाठ', allLessons:'सभी पाठ', explanation:'व्याख्या', playground:'कोड मैदान', run:'▶ चलाएं', clear:'साफ़ करें', output:'आउटपुट', dark:'डार्क', light:'लाइट', install:'📲 इंस्टॉल', aiTutor:'🤖 एआई ट्यूटर', askPh:'सवाल पूछें...', send:'भेजें', feedback:'💬 प्रतिक्रिया', feedbackPh:'बताएं क्या अच्छा है या क्या कमी है...', startLearning:'सीखना शुरू करें →', howItWorks:'यह कैसे काम करता है', lessonOf:'पाठ {n} / {t}' },
+bn: { menu:'মেনু', dashboard:'🏠 ড্যাশবোর্ড', lessons:'📚 পাঠ', allLessons:'সব পাঠ', explanation:'ব্যাখ্যা', playground:'কোড ময়দান', run:'▶ চালান', clear:'মুছুন', output:'আউটপুট', dark:'ডার্ক', light:'লাইট', install:'📲 ইনস্টল', aiTutor:'🤖 এআই টিউটর', askPh:'প্রশ্ন করুন...', send:'পাঠান', feedback:'💬 মতামত', feedbackPh:'বলুন কী ভালো বা কী কম...', startLearning:'শেখা শুরু করুন →', howItWorks:'এটি কীভাবে কাজ করে', lessonOf:'পাঠ {n} / {t}' },
+te: { menu:'మెనూ', dashboard:'🏠 డాష్‌బోర్డ్', lessons:'📚 పాఠాలు', allLessons:'అన్ని పాఠాలు', explanation:'వివరణ', playground:'కోడ్ మైదానం', run:'▶ అమలు చేయండి', clear:'క్లియర్', output:'అవుట్‌పుట్', dark:'డార్క్', light:'లైట్', install:'📲 ఇన్‌స్టాల్', aiTutor:'🤖 AI ట్యూటర్', askPh:'ప్రశ్న అడగండి...', send:'పంపండి', feedback:'💬 అభిప్రాయం', feedbackPh:'ఏమి బాగుంది లేదా ఏమి లోపం చెప్పండి...', startLearning:'నేర్చుకోవడం ప్రారంభించండి →', howItWorks:'ఇది ఎలా పని చేస్తుంది', lessonOf:'పాఠం {n} / {t}' },
+mr: { menu:'मेनू', dashboard:'🏠 डॅशबोर्ड', lessons:'📚 धडे', allLessons:'सर्व धडे', explanation:'स्पष्टीकरण', playground:'कोड मैदान', run:'▶ चालवा', clear:'पुसा', output:'आउटपुट', dark:'डार्क', light:'लाइट', install:'📲 इन्स्टॉल', aiTutor:'🤖 एआय ट्युटर', askPh:'प्रश्न विचारा...', send:'पाठवा', feedback:'💬 अभिप्राय', feedbackPh:'काय छान आहे किंवा काय कमी आहे सांगा...', startLearning:'शिकायला सुरुवात करा →', howItWorks:'हे कसे काम करते', lessonOf:'धडा {n} / {t}' },
+ta: { menu:'மெனு', dashboard:'🏠 டாஷ்போர்டு', lessons:'📚 பாடங்கள்', allLessons:'அனைத்து பாடங்கள்', explanation:'விளக்கம்', playground:'கோட் மைதானம்', run:'▶ இயக்கு', clear:'அழி', output:'வெளியீடு', dark:'டார்க்', light:'லைட்', install:'📲 நிறுவு', aiTutor:'🤖 AI டியூட்டர்', askPh:'கேள்வி கேளுங்கள்...', send:'அனுப்பு', feedback:'💬 கருத்து', feedbackPh:'எது நல்லது அல்லது எது குறைவு என சொல்லுங்கள்...', startLearning:'கற்கத் தொடங்கு →', howItWorks:'இது எப்படி வேலை செய்கிறது', lessonOf:'பாடம் {n} / {t}' },
+gu: { menu:'મેનૂ', dashboard:'🏠 ડેશબોર્ડ', lessons:'📚 પાઠ', allLessons:'બધા પાઠ', explanation:'સમજૂતી', playground:'કોડ મેદાન', run:'▶ ચલાવો', clear:'સાફ કરો', output:'આઉટપુટ', dark:'ડાર્ક', light:'લાઇટ', install:'📲 ઇન્સ્ટોલ', aiTutor:'🤖 AI ટ્યુટર', askPh:'પ્રશ્ન પૂછો...', send:'મોકલો', feedback:'💬 પ્રતિસાદ', feedbackPh:'શું સારું છે કે શું ઓછું છે જણાવો...', startLearning:'શીખવાનું શરૂ કરો →', howItWorks:'આ કેવી રીતે કામ કરે છે', lessonOf:'પાઠ {n} / {t}' },
+kn: { menu:'ಮೆನು', dashboard:'🏠 ಡ್ಯಾಶ್‌ಬೋರ್ಡ್', lessons:'📚 ಪಾಠಗಳು', allLessons:'ಎಲ್ಲಾ ಪಾಠಗಳು', explanation:'ವಿವರಣೆ', playground:'ಕೋಡ್ ಮೈದಾನ', run:'▶ ರನ್', clear:'ಕ್ಲಿಯರ್', output:'ಔಟ್‌ಪುಟ್', dark:'ಡಾರ್ಕ್', light:'ಲೈಟ್', install:'📲 ಇನ್‌ಸ್ಟಾಲ್', aiTutor:'🤖 AI ಟ್ಯೂಟರ್', askPh:'ಪ್ರಶ್ನೆ ಕೇಳಿ...', send:'ಕಳುಹಿಸಿ', feedback:'💬 ಪ್ರತಿಕ್ರಿಯೆ', feedbackPh:'ಏನು ಒಳ್ಳೆಯದು ಅಥವಾ ಏನು ಕಡಿಮೆ ಹೇಳಿ...', startLearning:'ಕಲಿಯಲು ಪ್ರಾರಂಭಿಸಿ →', howItWorks:'ಇದು ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ', lessonOf:'ಪಾಠ {n} / {t}' },
+or: { menu:'ମେନୁ', dashboard:'🏠 ଡ୍ୟାସବୋର୍ଡ', lessons:'📚 ପାଠ', allLessons:'ସମସ୍ତ ପାଠ', explanation:'ବ୍ୟାଖ୍ୟା', playground:'କୋଡ୍ ମଇଦାନ', run:'▶ ଚଲାନ୍ତୁ', clear:'ସଫା କରନ୍ତୁ', output:'ଆଉଟପୁଟ୍', dark:'ଡାର୍କ', light:'ଲାଇଟ୍', install:'📲 ଇନଷ୍ଟଲ', aiTutor:'🤖 AI ଟ୍ୟୁଟର', askPh:'ପ୍ରଶ୍ନ ପଚାରନ୍ତୁ...', send:'ପଠାନ୍ତୁ', feedback:'💬 ମତାମତ', feedbackPh:'କେଉଁଟି ଭଲ କିମ୍ବା କେଉଁଟି କମ କୁହନ୍ତୁ...', startLearning:'ଶିଖିବା ଆରମ୍ଭ କରନ୍ତୁ →', howItWorks:'ଏହା କିପରି କାମ କରେ', lessonOf:'ପାଠ {n} / {t}' },
+ml: { menu:'മെനു', dashboard:'🏠 ഡാഷ്ബോർഡ്', lessons:'📚 പാഠങ്ങൾ', allLessons:'എല്ലാ പാഠങ്ങളും', explanation:'വിശദീകരണം', playground:'കോഡ് മൈദാനം', run:'▶ റൺ', clear:'ക്ലിയർ', output:'ഔട്ട്‌പുട്ട്', dark:'ഡാർക്ക്', light:'ലൈറ്റ്', install:'📲 ഇൻസ്റ്റാൾ', aiTutor:'🤖 AI ട്യൂട്ടർ', askPh:'ചോദ്യം ചോദിക്കൂ...', send:'അയയ്ക്കൂ', feedback:'💬 അഭിപ്രായം', feedbackPh:'എന്താണ് നല്ലത് അല്ലെങ്കിൽ എന്ത് കുറവ് എന്ന് പറയൂ...', startLearning:'പഠനം ആരംഭിക്കൂ →', howItWorks:'ഇത് എങ്ങനെ പ്രവർത്തിക്കുന്നു', lessonOf:'പാഠം {n} / {t}' },
+as: { menu:'মেনু', dashboard:'🏠 ডেছব’ৰ্ড', lessons:'📚 পাঠ', allLessons:'সকলো পাঠ', explanation:'ব্যাখ্যা', playground:'ক’ড মৈদান', run:'▶ চলাওক', clear:'চাফা কৰক', output:'আউটপুট', dark:'ডাৰ্ক', light:'লাইট', install:'📲 ইনষ্টল', aiTutor:'🤖 AI টিউটৰ', askPh:'প্ৰশ্ন সোধক...', send:'পঠিয়াওক', feedback:'💬 মতামত', feedbackPh:'কি ভাল বা কি কম কওক...', startLearning:'শিকা আৰম্ভ কৰক →', howItWorks:'ই কেনে কাম কৰে', lessonOf:'পাঠ {n} / {t}' },
+ur: { menu:'مینو', dashboard:'🏠 ڈیش بورڈ', lessons:'📚 اسباق', allLessons:'تمام اسباق', explanation:'وضاحت', playground:'کوڈ میدان', run:'▶ چلائیں', clear:'صاف کریں', output:'آؤٹ پٹ', dark:'ڈارک', light:'لائٹ', install:'📲 انسٹال', aiTutor:'🤖 اے آئی ٹیوٹر', askPh:'سوال پوچھیں...', send:'بھیجیں', feedback:'💬 رائے', feedbackPh:'بتائیں کیا اچھا ہے یا کیا کمی ہے...', startLearning:'سیکھنا شروع کریں ←', howItWorks:'یہ کیسے کام کرتا ہے', lessonOf:'سبق {n} / {t}' }
+};
+
+function applyLang() {
+const d = I18N[currentLang] || I18N.en;
+document.querySelectorAll('[data-i18n]').forEach(el => {
+const k = el.getAttribute('data-i18n');
+if (d[k] !== undefined) el.textContent = d[k];
+});
+document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+const k = el.getAttribute('data-i18n-ph');
+if (d[k] !== undefined) el.setAttribute('placeholder', d[k]);
+});
+document.documentElement.dir = currentLang === 'ur' ? 'rtl' : 'ltr';
+document.documentElement.lang = currentLang;
+}
+
+// ===== Live page + lesson translation =====
+let pageNodes = null;
+let translateRun = 0;
+function collectPageNodes() {
+const sels = '.hero-title, .hero-sub, .study h3, .study > p, .fact-label, .reason h4, .reason p, .usecase strong, .usecase span, .code-note span, .step p, .how h3, .site-footer p, .bento-card h3, .bento-card p';
+pageNodes = Array.from(document.querySelectorAll(sels)).map(el => ({ el, en: el.textContent.trim() }));
+}
+function showTrToast(show) {
+let t = document.getElementById('trToast');
+if (!t) {
+t = document.createElement('div');
+t.id = 'trToast';
+t.className = 'tr-toast';
+t.textContent = '🌐 Translating…';
+document.body.appendChild(t);
+}
+t.classList.toggle('show', show);
+}
+let pageTranslateRun = 0;
+async function translatePage(lang) {
+if (!pageNodes) collectPageNodes();
+const run = ++pageTranslateRun;
+if (lang === 'en') {
+pageNodes.forEach(n => { n.el.textContent = n.en; });
+return;
+}
+showTrToast(true);
+try {
+const texts = pageNodes.map(n => n.en);
+const out = await TranslateKit.many(texts, lang);
+if (lang !== currentLang) return; // user switched again — discard stale result
+out.forEach((t, i) => { if (t) pageNodes[i].el.textContent = t; });
+} catch (e) { /* keep english on failure */ }
+if (lang === currentLang) showTrToast(false);
+}
+
 // ===== DOM =====
 const $ = (id) => document.getElementById(id);
 const lessonList = $('lessonList');
@@ -52,6 +119,7 @@ const startLearningBtn = $('startLearningBtn');
 
 // ===== Init =====
 document.addEventListener('DOMContentLoaded', async () => {
+collectPageNodes();
 renderLessonList();
 renderPills();
 loadTheme();
@@ -114,6 +182,8 @@ setTimeout(() => { menuOverlay.hidden = true; }, 300);
 
 // ===== Lesson List =====
 function renderLessonList() {
+const d = I18N[currentLang] || I18N.en;
+const meta = (n, t) => (d.lessonOf || 'Lesson {n} of {t}').replace('{n}', n).replace('{t}', t);
 lessonList.innerHTML = '';
 lessons.forEach((lesson, i) => {
 const li = document.createElement('li');
@@ -121,7 +191,7 @@ li.className = 'lesson-item' + (i === currentLessonIndex ? ' active' : '');
 li.style.animationDelay = (i * 0.05) + 's';
 li.innerHTML = `
 <div class="lesson-title">${lessonTitleFor(lesson)}</div>
-<div class="lesson-meta">Lesson ${i + 1} of ${lessons.length}</div>
+<div class="lesson-meta">${meta(i + 1, lessons.length)}</div>
 `;
 li.addEventListener('click', () => loadLesson(i));
 lessonList.appendChild(li);
@@ -139,7 +209,7 @@ return LANG_NAMES[currentLang] || 'English';
 }
 
 // ===== Load Lesson =====
-function loadLesson(index) {
+async function loadLesson(index) {
 currentLessonIndex = index;
 const lesson = lessons[index];
 
@@ -147,19 +217,47 @@ document.querySelectorAll('.lesson-item').forEach((li, i) => {
 li.classList.toggle('active', i === index);
 });
 
+const needsTr = currentLang !== 'en' && currentLang !== 'pa';
 explanationContent.innerHTML = `
 <div class="lang-toggle">
-<button class="lang-btn ${currentLang !== 'pa' ? 'active' : ''}" data-lang="en">English</button>
+<button class="lang-btn ${!needsTr && currentLang !== 'pa' ? 'active' : ''}" data-lang="en">English</button>
 <button class="lang-btn ${currentLang === 'pa' ? 'active' : ''}" data-lang="pa">ਪੰਜਾਬੀ</button>
 </div>
-<div class="explanation-text">${lessonTextFor(lesson)}</div>
+<div class="explanation-text">${needsTr ? '🌐 Translating…' : lessonTextFor(lesson)}</div>
 `;
 document.querySelectorAll('.lang-btn').forEach(btn => {
 btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
 });
 
+if (needsTr) {
+const langAtCall = currentLang;
+try {
+const [trText, trTitle] = await Promise.all([
+TranslateKit.one(lesson.text.en, langAtCall),
+TranslateKit.one(lesson.title.en, langAtCall)
+]);
+if (currentLang !== langAtCall) return; // user switched again — discard stale result
+const expText = explanationContent.querySelector('.explanation-text');
+if (expText) expText.textContent = trText;
+renderLessonListTranslated(trTitle, index);
+} catch (e) {
+const expText = explanationContent.querySelector('.explanation-text');
+if (expText && currentLang === langAtCall) expText.textContent = lesson.text.en;
+}
+}
+
 codeEditor.value = lesson.starter;
 outputDisplay.textContent = 'Output appears here...';
+}
+
+function renderLessonListTranslated(translatedTitle, activeIndex) {
+// update the active lesson's title in the sidebar with translated version
+document.querySelectorAll('.lesson-item').forEach((li, i) => {
+if (i === activeIndex) {
+const t = li.querySelector('.lesson-title');
+if (t) t.textContent = translatedTitle;
+}
+});
 }
 
 // ===== Pyodide =====
@@ -206,7 +304,10 @@ langSelect.value = lang;
 document.querySelectorAll('.lang-btn').forEach(btn => {
 btn.classList.toggle('active', btn.dataset.lang === lang);
 });
+renderLessonList();
 loadLesson(currentLessonIndex);
+applyLang();
+translatePage(lang);
 saveLanguage();
 }
 function loadLanguage() {
@@ -460,7 +561,7 @@ const text = feedbackText.value.trim();
 if (!text) { feedbackText.focus(); return; }
 const subject = encodeURIComponent('Python Kit Feedback');
 const body = encodeURIComponent(text);
-window.location.href = `mailto:?subject=${subject}&body=${body}`;
+window.location.href = `mailto:sharvu2012@gmail.com?subject=${subject}&body=${body}`;
 feedbackText.value = '';
 feedbackDone.hidden = false;
 setTimeout(closeAllPanels, 1200);

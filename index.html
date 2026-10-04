@@ -29,7 +29,7 @@
 <h1><span class="logo-bubble">🐍</span> <span class="app-name">Python Kit</span></h1>
 </div>
 <div class="topbar-actions">
-<button id="installBtn" class="btn btn-primary btn-install" hidden>📲 Install</button>
+<button id="installBtn" class="btn btn-primary btn-install" data-i18n="install" hidden>📲 Install</button>
 <select id="langSelect" aria-label="Language">
 <option value="en">English</option>
 <option value="pa">ਪੰਜਾਬੀ</option>
@@ -52,12 +52,12 @@
 <div id="menuOverlay" class="menu-overlay" hidden></div>
 <nav id="sideMenu" class="side-menu" aria-label="Main menu">
 <div class="menu-head">
-<h2><span class="logo-bubble">🐍</span> Menu</h2>
+<h2><span class="logo-bubble">🐍</span> <span data-i18n="menu">Menu</span></h2>
 <button id="closeMenuBtn" class="icon-btn" aria-label="Close menu">✕</button>
 </div>
 <div class="menu-links">
-<a class="menu-link active" data-view="dashboard">🏠 Dashboard</a>
-<a class="menu-link" data-view="lessons">📚 Lessons</a>
+<a class="menu-link active" data-view="dashboard" data-i18n="dashboard">🏠 Dashboard</a>
+<a class="menu-link" data-view="lessons" data-i18n="lessons">📚 Lessons</a>
 </div>
 <div class="menu-foot">Made with 💜 for learners</div>
 </nav>
@@ -69,7 +69,7 @@
 <div class="hero reveal">
 <h2 class="hero-title">Learn Python. <span>No setup. No fear.</span></h2>
 <p class="hero-sub">Run real Python right in your browser, get friendly hints from an AI tutor, and learn in your own language — free, forever.</p>
-<button class="btn btn-primary btn-cta" id="startLearningBtn">Start Learning →</button>
+<button class="btn btn-primary btn-cta" id="startLearningBtn" data-i18n="startLearning">Start Learning →</button>
 </div>
 
 <!-- 📖 WHAT IS PYTHON -->
@@ -161,7 +161,7 @@
 </div>
 
 <div class="how reveal">
-<h3>How it works</h3>
+<h3 data-i18n="howItWorks">How it works</h3>
 <div class="steps">
 <div class="step"><div class="step-num">1</div><p>Pick a lesson from the menu</p></div>
 <div class="step-arrow">→</div>
@@ -176,31 +176,31 @@
 <section id="view-lessons" class="view" hidden>
 <div class="lessons-layout">
 <aside class="sidebar" role="navigation" aria-label="Lessons">
-<h2>All Lessons</h2>
+<h2 data-i18n="allLessons">All Lessons</h2>
 <ul id="lessonList" class="lesson-list"></ul>
 </aside>
 
 <div class="lessons-content">
 <section class="explanation reveal" aria-labelledby="explanationTitle">
-<h2 id="explanationTitle">Explanation</h2>
+<h2 id="explanationTitle" data-i18n="explanation">Explanation</h2>
 <div id="explanationContent"></div>
 </section>
 
 <section class="code-playground reveal" aria-labelledby="codeTitle">
 <header class="playground-header">
-<h2 id="codeTitle">Code Playground</h2>
+<h2 id="codeTitle" data-i18n="playground">Code Playground</h2>
 <div class="playground-actions">
 <select id="themeSelect" aria-label="Theme">
-<option value="dark">Dark</option>
-<option value="light">Light</option>
+<option value="dark" data-i18n="dark">Dark</option>
+<option value="light" data-i18n="light">Light</option>
 </select>
-<button id="runBtn" class="btn btn-primary">▶ Run</button>
-<button id="clearBtn" class="btn btn-secondary">Clear</button>
+<button id="runBtn" class="btn btn-primary" data-i18n="run">▶ Run</button>
+<button id="clearBtn" class="btn btn-secondary" data-i18n="clear">Clear</button>
 </div>
 </header>
 <textarea id="codeEditor" class="code-editor" spellcheck="false" placeholder="Write your Python code here..."></textarea>
 <div class="output-area">
-<h3>Output</h3>
+<h3 data-i18n="output">Output</h3>
 <pre id="outputDisplay" class="output-display" aria-live="polite">Output appears here...</pre>
 </div>
 </section>
@@ -214,13 +214,13 @@
 <!-- chat panel -->
 <div class="chat-panel" id="chatPanel" hidden>
 <div class="chat-head">
-<h3>🤖 AI Tutor</h3>
+<h3 data-i18n="aiTutor">🤖 AI Tutor</h3>
 <button class="icon-btn" id="chatClose" aria-label="Close chat">✕</button>
 </div>
 <div class="ai-pills" id="aiPills"></div>
 <div class="ai-chat" id="aiChat" role="log" aria-live="polite"></div>
 <div class="chat-input-row">
-<textarea id="aiInput" class="ai-input" placeholder="Ask a question..." rows="2"></textarea>
+<textarea id="aiInput" class="ai-input" data-i18n-ph="askPh" placeholder="Ask a question..." rows="2"></textarea>
 <button id="aiSendBtn" class="btn btn-primary btn-send">➤</button>
 </div>
 <span id="aiStatus" class="ai-status" aria-live="polite"></span>
@@ -229,13 +229,13 @@
 <!-- feedback panel -->
 <div class="chat-panel" id="feedbackPanel" hidden>
 <div class="chat-head">
-<h3>💬 Feedback</h3>
+<h3 data-i18n="feedback">💬 Feedback</h3>
 <button class="icon-btn" id="feedbackClose" aria-label="Close feedback">✕</button>
 </div>
-<textarea id="feedbackText" class="ai-input feedback-text" placeholder="Tell us what's good or missing..." rows="4"></textarea>
+<textarea id="feedbackText" class="ai-input feedback-text" data-i18n-ph="feedbackPh" placeholder="Tell us what's good or missing..." rows="4"></textarea>
 <div class="chat-input-row">
 <span id="feedbackDone" class="feedback-done" hidden>Thanks! 💜</span>
-<button class="btn btn-primary" id="feedbackSend">Send</button>
+<button class="btn btn-primary" id="feedbackSend" data-i18n="send">Send</button>
 </div>
 </div>
 
@@ -250,6 +250,7 @@
 <!-- Pyodide -->
 <script src="https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js"></script>
 <script src="lessons.js"></script>
+<script src="translate.js"></script>
 <script src="app.js"></script>
 <script>
 if ('serviceWorker' in navigator) {
