@@ -144,6 +144,7 @@ setupFireworks();
 setupInstall();
 setupFab();
 setupQuiz();
+setupClass();
 await initPyodide();
 loadLesson(0);
 showView('dashboard');
@@ -624,49 +625,8 @@ if (e.key === 'Escape') closeAllPanels();
 });
 }
 
-// ===== 🔊 SFX (synthesized, no files) =====
-const sfx = (() => {
-let ac = null;
-function ctx() {
-if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
-if (ac.state === 'suspended') ac.resume();
-return ac;
-}
-function tone(freq, dur, type = 'sine', vol = 0.11, when = 0) {
-try {
-const a = ctx();
-const o = a.createOscillator();
-const g = a.createGain();
-o.type = type; o.frequency.value = freq;
-const t0 = a.currentTime + when;
-g.gain.setValueAtTime(0, t0);
-g.gain.linearRampToValueAtTime(vol, t0 + 0.012);
-g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-o.connect(g).connect(a.destination);
-o.start(t0); o.stop(t0 + dur + 0.03);
-} catch (e) {}
-}
-function noise(dur = 0.28, vol = 0.07) {
-try {
-const a = ctx();
-const n = Math.floor(a.sampleRate * dur);
-const buf = a.createBuffer(1, n, a.sampleRate);
-const d = buf.getChannelData(0);
-for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
-const s = a.createBufferSource(); s.buffer = buf;
-const g = a.createGain(); g.gain.value = vol;
-s.connect(g).connect(a.destination); s.start();
-} catch (e) {}
-}
-return {
-click: () => tone(600, 0.06, 'square', 0.05),
-correct: () => { tone(660, 0.09); tone(880, 0.13, 'sine', 0.11, 0.08); },
-wrong: () => tone(170, 0.22, 'sawtooth', 0.09),
-pass: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.17, 'sine', 0.11, i * 0.09)),
-firework: () => noise(),
-complete: () => [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, 0.22, 'sine', 0.11, i * 0.11))
-};
-})();
+// ===== 🔇 SOUND DISABLED (per user request) — no-op stub keeps calls safe =====
+const sfx = new Proxy({}, { get: () => () => {} });
 
 // ===== 🔥 DAILY STREAK =====
 function updateStreak() {
@@ -779,6 +739,137 @@ x.fillText('on "' + lessonTitle + '"', 600, 488);
 x.fillStyle = '#a78bfa'; x.font = '600 24px "Segoe UI", sans-serif';
 x.fillText('🐍 Python Kit · Learn free at python-kit.vercel.app', 600, 575);
 return c;
+}
+
+// ===== 🏫 CLASS SYSTEM (join + report + teacher roster) =====
+// 🔑 PASTE YOUR APPS SCRIPT /exec URL HERE (from gas.gs deployment):
+const CLASS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzg_dYD_o33sHEpqJsvtdUejV6N70RBRaf2weM3kxHzglHVNI2DbahJ_X2rxrhQwhJYlg/exec';
+
+let classInfo = null;
+try { classInfo = JSON.parse(localStorage.getItem('pk_class')); } catch (e) {}
+
+function updateClassButton() {
+const btn = $('joinClassBtn');
+if (!btn) return;
+if (classInfo && classInfo.code && classInfo.name) {
+btn.textContent = '🏫 ' + classInfo.code + ' · ' + classInfo.name;
+} else {
+btn.textContent = '🏫 Join Class';
+}
+}
+
+function setupClass() {
+updateClassButton();
+$('joinClassBtn').addEventListener('click', () => {
+$('classOverlay').hidden = false;
+$('classCode').value = classInfo && classInfo.code ? classInfo.code : '';
+$('className').value = classInfo && classInfo.name ? classInfo.name : '';
+setTimeout(() => $('classCode').focus(), 200);
+});
+$('classClose').addEventListener('click', () => { $('classOverlay').hidden = true; });
+$('classOverlay').addEventListener('click', (e) => { if (e.target === $('classOverlay')) $('classOverlay').hidden = true; });
+$('classSaveBtn').addEventListener('click', () => {
+const code = $('classCode').value.trim().toUpperCase();
+const name = $('className').value.trim();
+if (!code || !name) { showTrToastText('Enter class code and your name'); return; }
+classInfo = { code, name };
+localStorage.setItem('pk_class', JSON.stringify(classInfo));
+updateClassButton();
+$('classOverlay').hidden = true;
+showTrToastText('🏫 Joined class ' + code + '!');
+reportProgress();
+});
+$('teacherLoadBtn').addEventListener('click', loadTeacherRoster);
+$('teacherPin').addEventListener('keydown', (e) => { if (e.key === 'Enter') loadTeacherRoster(); });
+}
+
+// student → teacher: report progress (fire and forget)
+function reportProgress() {
+if (!CLASS_SCRIPT_URL || !classInfo || !classInfo.code || !classInfo.name) return;
+try {
+fetch(CLASS_SCRIPT_URL, {
+method: 'POST',
+mode: 'no-cors',
+headers: { 'Content-Type': 'text/plain' },
+body: JSON.stringify({
+class: classInfo.code,
+student: classInfo.name,
+xp: progress.xp,
+done: progress.completed.length,
+streak: Number(($('streakCount') || {}).textContent) || 0,
+scores: progress.scores
+})
+});
+} catch (e) {}
+}
+
+// teacher → roster via JSONP (Apps Script CORS workaround)
+let teacherCbId = 0;
+function loadTeacherRoster() {
+const code = $('teacherCode').value.trim().toUpperCase();
+const pin = $('teacherPin').value.trim();
+const err = $('teacherError');
+err.hidden = true;
+
+if (!CLASS_SCRIPT_URL) {
+err.textContent = '⚙️ Setup needed: deploy gas.gs in script.google.com, then paste its URL into app.js (CLASS_SCRIPT_URL).';
+err.hidden = false;
+return;
+}
+if (!code || !pin) { err.textContent = 'Enter class code and PIN.'; err.hidden = false; return; }
+
+const wrap = $('teacherTableWrap');
+wrap.innerHTML = '<p class="teacher-empty">Loading…</p>';
+
+const cbName = '__teacherCb' + (++teacherCbId);
+const s = document.createElement('script');
+window[cbName] = (data) => {
+try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
+s.remove();
+if (!data || !data.ok) {
+err.textContent = (data && data.error) || 'Failed to load.';
+err.hidden = false;
+wrap.innerHTML = '';
+return;
+}
+renderTeacherTable(data.students || []);
+};
+s.onerror = () => {
+err.textContent = 'Network error loading roster.';
+err.hidden = false;
+wrap.innerHTML = '';
+};
+s.src = CLASS_SCRIPT_URL + '?class=' + encodeURIComponent(code) + '&pin=' + encodeURIComponent(pin) + '&callback=' + cbName;
+document.body.appendChild(s);
+}
+
+function renderTeacherTable(students) {
+const wrap = $('teacherTableWrap');
+const total = lessons.length;
+if (!students.length) {
+wrap.innerHTML = '<p class="teacher-empty">No students in this class yet — share the class code with them!</p>';
+return;
+}
+let html = '<table class="teacher-table"><thead><tr>' +
+'<th>#</th><th>Student</th><th>XP</th><th>Lessons</th><th>Streak</th><th>Last Active</th>' +
+'</tr></thead><tbody>';
+students.forEach((st, i) => {
+let last = '—';
+if (st.last) {
+const d = new Date(st.last);
+last = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+html += '<tr>' +
+'<td>' + (i + 1) + '</td>' +
+'<td>' + escapeHtml(st.name) + '</td>' +
+'<td class="td-xp">⭐ ' + st.xp + '</td>' +
+'<td>' + st.done + '/' + total + '</td>' +
+'<td>🔥 ' + st.streak + '</td>' +
+'<td class="td-last">' + last + '</td>' +
+'</tr>';
+});
+html += '</tbody></table>';
+wrap.innerHTML = html;
 }
 
 // ===== ROADMAP =====
@@ -1055,6 +1146,7 @@ progress.xp += correct * 5;
 saveProgress();
 renderLessonList();
 updateStreak();
+reportProgress();
 sfx.pass();
 setTimeout(() => document.dispatchEvent(new PointerEvent('pointerdown', { clientX: innerWidth / 2, clientY: innerHeight / 3 })), 200);
 }

@@ -60,6 +60,7 @@
 <a class="menu-link active" data-view="dashboard" data-i18n="dashboard">🏠 Dashboard</a>
 <a class="menu-link" data-view="roadmap" data-i18n="roadmap">🗺️ Roadmap</a>
 <a class="menu-link" data-view="lessons" data-i18n="lessons">📚 Lessons</a>
+<a class="menu-link" data-view="teacher">🏫 Teacher</a>
 </div>
 <div class="menu-foot">Made with 💜 for learners</div>
 </nav>
@@ -182,10 +183,26 @@
 <div class="xp-badge">⭐ <span id="xpValue">0</span> XP</div>
 <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
 <span class="progress-label" id="progressLabel">0 / 10</span>
+<button class="btn btn-secondary" id="joinClassBtn">🏫 Join Class</button>
 <button class="btn btn-primary cert-btn" id="certBtn" hidden>🎓 Get Certificate</button>
 </div>
 </div>
 <div class="road-path" id="roadPath"></div>
+</section>
+
+<!-- ===== VIEW: TEACHER ===== -->
+<section id="view-teacher" class="view" hidden>
+<div class="teacher-head reveal">
+<h2>🏫 Teacher Dashboard</h2>
+<p class="teacher-sub">See your students' progress live — XP, lessons completed, streaks.</p>
+<div class="teacher-form">
+<input type="text" id="teacherCode" class="teacher-input" placeholder="Class code (e.g. CLASS7A)">
+<input type="password" id="teacherPin" class="teacher-input" placeholder="Teacher PIN">
+<button class="btn btn-primary" id="teacherLoadBtn">Load Roster</button>
+</div>
+<p class="teacher-error" id="teacherError" hidden></p>
+</div>
+<div class="teacher-table-wrap reveal" id="teacherTableWrap"></div>
 </section>
 
 <!-- ===== VIEW: LESSONS ===== -->
@@ -291,6 +308,22 @@
 <button class="btn btn-secondary" id="shareBtn">📤 Share</button>
 <button class="btn btn-primary" id="quizContinueBtn">Continue →</button>
 </div>
+</div>
+</div>
+</div>
+
+<!-- ===== JOIN CLASS MODAL ===== -->
+<div class="quiz-overlay" id="classOverlay" hidden>
+<div class="quiz-card cert-card" role="dialog" aria-modal="true">
+<div class="quiz-head">
+<h3>🏫 Join a Class</h3>
+<button class="icon-btn" id="classClose" aria-label="Close">✕</button>
+</div>
+<div class="cert-body">
+<p>Get the class code from your teacher, plus your name — your progress will appear on their dashboard.</p>
+<input type="text" id="classCode" class="cert-name" placeholder="Class code (e.g. CLASS7A)" maxlength="20">
+<input type="text" id="className" class="cert-name" placeholder="Your name" maxlength="30">
+<button class="btn btn-primary" id="classSaveBtn">Join →</button>
 </div>
 </div>
 </div>

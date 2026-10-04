@@ -1,4 +1,4 @@
-const CACHE = 'python-kit-v23'; // code tests + streak + certificate + sfx + share
+const CACHE = 'python-kit-v25'; // teacher dashboard + class system
 const ASSETS = [
 '/', '/index.html', '/style.css', '/app.js', '/lessons.js',
 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js'
