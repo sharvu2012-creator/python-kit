@@ -60,7 +60,6 @@ setupEventListeners();
 setupMenu();
 setupScrollReveal();
 setupFireworks();
-setupSmoothScroll();
 setupInstall();
 setupFab();
 await initPyodide();
@@ -297,25 +296,24 @@ return div.innerHTML;
 
 // ===== Scroll Reveal (GPU-smooth, starts after splash, fine elements too) =====
 function setupScrollReveal() {
-const els = document.querySelectorAll('.reveal, .reveal-fine');
 if (!('IntersectionObserver' in window)) {
-els.forEach(el => el.classList.add('in'));
+document.querySelectorAll('.reveal, .reveal-fine').forEach(el => el.classList.add('in'));
 return;
 }
 
-// tag small elements + text inside study/hero/how blocks
+// 1) tag small elements + text FIRST (before querying!)
 document.querySelectorAll(
 '.study h3, .study > p, .fact, .reason, .usecase, .code-block, .code-note, .step, .hero-title, .hero-sub, .how h3'
 ).forEach(el => el.classList.add('reveal-fine'));
 
-// stagger small elements within their parent section (text starts after block begins)
+// 2) stagger small elements within their parent section
 document.querySelectorAll('.study, .hero, .how').forEach(parent => {
 parent.querySelectorAll('.reveal-fine').forEach((k, i) => {
 k.style.transitionDelay = (0.12 + i * 0.05) + 's';
 });
 });
 
-// cascade cards inside grids
+// 3) cascade cards inside grids
 document.querySelectorAll('.bento-grid, .reason-grid, .usecase-grid, .fact-row, .steps').forEach(grid => {
 Array.from(grid.children).forEach((child, i) => {
 if (child.classList.contains('reveal')) {
@@ -323,6 +321,9 @@ child.style.transitionDelay = (i * 0.07) + 's';
 }
 });
 });
+
+// 4) NOW collect everything (after tagging!)
+const els = document.querySelectorAll('.reveal, .reveal-fine');
 
 const io = new IntersectionObserver((entries) => {
 entries.forEach((entry) => {
@@ -400,45 +401,7 @@ else { raf = null; fx.clearRect(0, 0, canvas.width, canvas.height); }
 document.addEventListener('pointerdown', (e) => burst(e.clientX, e.clientY));
 }
 
-// ===== 🛼 Smooth scrolling (inertia, desktop only) =====
-function setupSmoothScroll() {
-const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-if (isTouch || reduced) return;
-
-let targetY = window.scrollY;
-let currentY = window.scrollY;
-let rafId = null;
-const EASE = 0.085;
-
-window.addEventListener('wheel', (e) => {
-if (e.ctrlKey) return; // pinch zoom
-// don't hijack scrollable panels/inputs
-if (e.target.closest('.ai-chat, textarea, select, .side-menu, .sidebar, .lesson-list, .chat-panel, .code-editor, pre')) return;
-
-e.preventDefault();
-const delta = e.deltaMode === 1 ? e.deltaY * 33 : e.deltaY;
-const maxY = Math.max(0, document.documentElement.scrollHeight - innerHeight);
-targetY = Math.max(0, Math.min(maxY, targetY + delta));
-if (!rafId) rafId = requestAnimationFrame(tick);
-}, { passive: false });
-
-function tick() {
-currentY += (targetY - currentY) * EASE;
-if (Math.abs(targetY - currentY) < 0.5) {
-currentY = targetY;
-window.scrollTo(0, currentY);
-rafId = null;
-return;
-}
-window.scrollTo(0, currentY);
-rafId = requestAnimationFrame(tick);
-}
-
-window.addEventListener('scroll', () => {
-if (!rafId) { targetY = currentY = window.scrollY; }
-});
-}
+// smooth scrolling: native CSS scroll-behavior only (custom inertia removed — was too slow)
 
 // ===== PWA Install =====
 function setupInstall() {

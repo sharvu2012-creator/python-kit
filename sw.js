@@ -1,4 +1,4 @@
-const CACHE = 'python-kit-v11'; // fireworks + smooth scroll + fine reveals
+const CACHE = 'python-kit-v14'; // fix: visible language dropdown options
 const ASSETS = [
 '/', '/index.html', '/style.css', '/app.js', '/lessons.js',
 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js'
