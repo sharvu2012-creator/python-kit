@@ -59,6 +59,8 @@ loadLanguage();
 setupEventListeners();
 setupMenu();
 setupScrollReveal();
+setupFireworks();
+setupSmoothScroll();
 setupInstall();
 setupFab();
 await initPyodide();
@@ -293,19 +295,31 @@ div.textContent = text;
 return div.innerHTML;
 }
 
-// ===== Scroll Reveal (buttery: blur-fade + sibling cascade) =====
+// ===== Scroll Reveal (GPU-smooth, starts after splash, fine elements too) =====
 function setupScrollReveal() {
-const els = document.querySelectorAll('.reveal');
+const els = document.querySelectorAll('.reveal, .reveal-fine');
 if (!('IntersectionObserver' in window)) {
 els.forEach(el => el.classList.add('in'));
 return;
 }
 
-// stagger siblings inside grids/lists so cards cascade one-by-one
+// tag small elements + text inside study/hero/how blocks
+document.querySelectorAll(
+'.study h3, .study > p, .fact, .reason, .usecase, .code-block, .code-note, .step, .hero-title, .hero-sub, .how h3'
+).forEach(el => el.classList.add('reveal-fine'));
+
+// stagger small elements within their parent section (text starts after block begins)
+document.querySelectorAll('.study, .hero, .how').forEach(parent => {
+parent.querySelectorAll('.reveal-fine').forEach((k, i) => {
+k.style.transitionDelay = (0.12 + i * 0.05) + 's';
+});
+});
+
+// cascade cards inside grids
 document.querySelectorAll('.bento-grid, .reason-grid, .usecase-grid, .fact-row, .steps').forEach(grid => {
 Array.from(grid.children).forEach((child, i) => {
 if (child.classList.contains('reveal')) {
-child.style.transitionDelay = (i * 0.08) + 's';
+child.style.transitionDelay = (i * 0.07) + 's';
 }
 });
 });
@@ -316,12 +330,114 @@ if (entry.isIntersecting) {
 const el = entry.target;
 el.classList.add('in');
 io.unobserve(el);
-// clear the stagger delay after entrance so hover effects stay snappy
 setTimeout(() => { el.style.transitionDelay = '0s'; }, 1100);
 }
 });
-}, { threshold: 0.08, rootMargin: '0px 0px -24px 0px' });
+}, { threshold: 0.06, rootMargin: '0px 0px -20px 0px' });
+
+// wait for splash to finish (~3.4s) so first sections animate visibly
+setTimeout(() => {
 els.forEach(el => io.observe(el));
+}, 3400);
+}
+
+// ===== 🎆 Purple click fireworks =====
+function setupFireworks() {
+const canvas = $('fxCanvas');
+if (!canvas) return;
+const fx = canvas.getContext('2d');
+const COLORS = ['#a78bfa', '#8b5cf6', '#c4b5fd', '#e9d5ff', '#7c3aed', '#f0abfc'];
+let parts = [];
+let raf = null;
+
+function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+addEventListener('resize', resize);
+resize();
+
+function burst(x, y) {
+for (let i = 0; i < 26; i++) {
+const a = Math.random() * Math.PI * 2;
+const sp = 2 + Math.random() * 5.5;
+parts.push({
+x, y,
+vx: Math.cos(a) * sp,
+vy: Math.sin(a) * sp - 1.5,
+life: 1,
+decay: 0.012 + Math.random() * 0.014,
+size: 1.5 + Math.random() * 2.5,
+c: COLORS[(Math.random() * COLORS.length) | 0],
+flash: false, r: 0
+});
+}
+parts.push({ flash: true, x, y, life: 1, decay: 0.06, size: 0, r: 8, vx: 0, vy: 0, c: '#c4b5fd' });
+if (!raf) raf = requestAnimationFrame(tick);
+}
+
+function tick() {
+fx.clearRect(0, 0, canvas.width, canvas.height);
+parts = parts.filter(p => p.life > 0);
+for (const p of parts) {
+p.life -= p.decay;
+if (p.flash) {
+p.r += 3.2;
+fx.globalAlpha = Math.max(0, p.life * 0.35);
+fx.fillStyle = p.c;
+fx.beginPath(); fx.arc(p.x, p.y, p.r, 0, 7); fx.fill();
+continue;
+}
+p.x += p.vx; p.y += p.vy;
+p.vy += 0.085;
+p.vx *= 0.985; p.vy *= 0.985;
+fx.globalAlpha = Math.max(0, p.life);
+fx.fillStyle = p.c;
+fx.beginPath(); fx.arc(p.x, p.y, p.size, 0, 7); fx.fill();
+}
+fx.globalAlpha = 1;
+if (parts.length) { raf = requestAnimationFrame(tick); }
+else { raf = null; fx.clearRect(0, 0, canvas.width, canvas.height); }
+}
+
+document.addEventListener('pointerdown', (e) => burst(e.clientX, e.clientY));
+}
+
+// ===== 🛼 Smooth scrolling (inertia, desktop only) =====
+function setupSmoothScroll() {
+const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (isTouch || reduced) return;
+
+let targetY = window.scrollY;
+let currentY = window.scrollY;
+let rafId = null;
+const EASE = 0.085;
+
+window.addEventListener('wheel', (e) => {
+if (e.ctrlKey) return; // pinch zoom
+// don't hijack scrollable panels/inputs
+if (e.target.closest('.ai-chat, textarea, select, .side-menu, .sidebar, .lesson-list, .chat-panel, .code-editor, pre')) return;
+
+e.preventDefault();
+const delta = e.deltaMode === 1 ? e.deltaY * 33 : e.deltaY;
+const maxY = Math.max(0, document.documentElement.scrollHeight - innerHeight);
+targetY = Math.max(0, Math.min(maxY, targetY + delta));
+if (!rafId) rafId = requestAnimationFrame(tick);
+}, { passive: false });
+
+function tick() {
+currentY += (targetY - currentY) * EASE;
+if (Math.abs(targetY - currentY) < 0.5) {
+currentY = targetY;
+window.scrollTo(0, currentY);
+rafId = null;
+return;
+}
+window.scrollTo(0, currentY);
+rafId = requestAnimationFrame(tick);
+}
+
+window.addEventListener('scroll', () => {
+if (!rafId) { targetY = currentY = window.scrollY; }
+});
 }
 
 // ===== PWA Install =====
