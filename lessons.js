@@ -15,7 +15,7 @@ teacherNotes: "Explain that print() is a function. The text inside quotes is cal
 {
 title: { pa: "ਵੇਰੀਏਬਲਜ਼ (ਚਲ)", en: "Variables" },
 text: {
-pa: "ਵੇਰੀਏਬਲ ਇੱਕ ਬਾਕਸ ਹੈ ਜਿਸ ਵਿੱਚ ਤੁਸੀਂ ਮੁੱਲ ਸਟੋਰ ਕਰਦੇ ਹੋ। ਪਾਇਥਨ ਵਿੱਚ ਤੁਹਾਨੂੰ ਵੇਰੀਏਬਲ ਦਾ ਕਿਸਮ ਦੱਸਣ ਦੀ ਲੋੜ ਨਹੀਂ — ਇਹ ਆਪਣੇ आप ਸਮਝ ਜਾਂਦਾ ਹੈ।",
+pa: "ਵੇਰੀਏਬਲ ਇੱਕ ਬਾਕਸ ਹੈ ਜਿਸ ਵਿੱਚ ਤੁਸੀਂ ਮੁੱਲ ਸਟੋਰ ਕਰਦੇ ਹੋ। ਪਾਇਥਨ ਵਿੱਚ ਤੁਹਾਨੂੰ ਵੇਰੀਏਬਲ ਦਾ ਕਿਸਮ ਦੱਸਣ ਦੀ ਲੋੜ ਨਹੀਂ — ਇਹ ਆਪਣे आप ਸਮਝ ਜਾਂਦਾ ਹੈ।",
 en: "A variable is a box that stores a value. Python figures out the type automatically — you don't need to declare it."
 },
 starter: 'name = "Alex"\nage = 14\nprint("Name:", name)\nprint("Age:", age)',

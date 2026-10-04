@@ -1,4 +1,4 @@
-const CACHE = 'python-kit-v4'; // bumped: kisan layout — menu + dashboard + chat FAB
+const CACHE = 'python-kit-v9'; // buttery scroll reveal (blur-fade + cascade)
 const ASSETS = [
 '/', '/index.html', '/style.css', '/app.js', '/lessons.js',
 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js'

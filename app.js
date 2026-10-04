@@ -39,10 +39,8 @@ const menuBtn = $('menuBtn');
 const closeMenuBtn = $('closeMenuBtn');
 const sideMenu = $('sideMenu');
 const menuOverlay = $('menuOverlay');
-const fabBtn = $('fabBtn');
-const fabPanel = $('fabPanel');
-const fabAsk = $('fabAsk');
-const fabFeedback = $('fabFeedback');
+const fabAiBtn = $('fabAiBtn');
+const fabFeedbackBtn = $('fabFeedbackBtn');
 const chatPanel = $('chatPanel');
 const chatClose = $('chatClose');
 const feedbackPanel = $('feedbackPanel');
@@ -295,21 +293,34 @@ div.textContent = text;
 return div.innerHTML;
 }
 
-// ===== Scroll Reveal =====
+// ===== Scroll Reveal (buttery: blur-fade + sibling cascade) =====
 function setupScrollReveal() {
 const els = document.querySelectorAll('.reveal');
 if (!('IntersectionObserver' in window)) {
 els.forEach(el => el.classList.add('in'));
 return;
 }
+
+// stagger siblings inside grids/lists so cards cascade one-by-one
+document.querySelectorAll('.bento-grid, .reason-grid, .usecase-grid, .fact-row, .steps').forEach(grid => {
+Array.from(grid.children).forEach((child, i) => {
+if (child.classList.contains('reveal')) {
+child.style.transitionDelay = (i * 0.08) + 's';
+}
+});
+});
+
 const io = new IntersectionObserver((entries) => {
 entries.forEach((entry) => {
 if (entry.isIntersecting) {
-entry.target.classList.add('in');
-io.unobserve(entry.target);
+const el = entry.target;
+el.classList.add('in');
+io.unobserve(el);
+// clear the stagger delay after entrance so hover effects stay snappy
+setTimeout(() => { el.style.transitionDelay = '0s'; }, 1100);
 }
 });
-}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+}, { threshold: 0.08, rootMargin: '0px 0px -24px 0px' });
 els.forEach(el => io.observe(el));
 }
 
@@ -335,41 +346,33 @@ if (installCard) installCard.addEventListener('click', doInstall);
 window.addEventListener('appinstalled', () => { installBtn.hidden = true; });
 }
 
-// ===== FAB + Chat + Feedback =====
+// ===== FAB + Chat + Feedback (two icons, open only on click) =====
 function setupFab() {
 const closeAllPanels = () => {
-fabPanel.hidden = true;
 chatPanel.hidden = true;
 feedbackPanel.hidden = true;
-fabBtn.classList.remove('open');
-fabBtn.textContent = '🤖';
 };
-fabBtn.addEventListener('click', (e) => {
+fabAiBtn.addEventListener('click', (e) => {
 e.stopPropagation();
-if (!chatPanel.hidden || !feedbackPanel.hidden) { closeAllPanels(); return; }
-if (fabPanel.hidden) {
-fabPanel.hidden = false;
-fabBtn.classList.add('open');
-fabBtn.textContent = '✕';
-} else {
+const opening = chatPanel.hidden;
 closeAllPanels();
-}
-});
-fabAsk.addEventListener('click', (e) => {
-e.stopPropagation();
-fabPanel.hidden = true;
+if (opening) {
 chatPanel.hidden = false;
 if (aiChat.children.length === 0) {
 addAIMessage('assistant', 'Hi! I am your Python tutor. Ask me anything about the lesson 🐍');
 }
 setTimeout(() => aiInput.focus(), 250);
+}
 });
-fabFeedback.addEventListener('click', (e) => {
+fabFeedbackBtn.addEventListener('click', (e) => {
 e.stopPropagation();
-fabPanel.hidden = true;
+const opening = feedbackPanel.hidden;
+closeAllPanels();
+if (opening) {
 feedbackPanel.hidden = false;
 feedbackDone.hidden = true;
 setTimeout(() => feedbackText.focus(), 250);
+}
 });
 chatClose.addEventListener('click', closeAllPanels);
 feedbackClose.addEventListener('click', closeAllPanels);
