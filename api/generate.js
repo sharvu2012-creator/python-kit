@@ -31,7 +31,7 @@ Topic: ${topic}
 Level: ${level || 'beginner'}
 Language: ${lang === 'pa' ? 'Punjabi and English' : 'English'}`;
 
-const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+const model = process.env.GEMINI_MODEL || 'gemini-3-flash-preview';
 const apiKey = process.env.GEMINI_API_KEY;
 
 if (!apiKey) {
