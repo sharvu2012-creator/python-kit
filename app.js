@@ -232,16 +232,7 @@ li.classList.toggle('active', i === index);
 });
 
 const needsTr = currentLang !== 'en' && currentLang !== 'pa';
-explanationContent.innerHTML = `
-<div class="lang-toggle">
-<button class="lang-btn ${!needsTr && currentLang !== 'pa' ? 'active' : ''}" data-lang="en">English</button>
-<button class="lang-btn ${currentLang === 'pa' ? 'active' : ''}" data-lang="pa">ਪੰਜਾਬੀ</button>
-</div>
-<div class="explanation-text">${needsTr ? '🌐 Translating…' : lessonTextFor(lesson)}</div>
-`;
-document.querySelectorAll('.lang-btn').forEach(btn => {
-btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
-});
+explanationContent.innerHTML = `<div class="explanation-text">${needsTr ? '🌐 Translating…' : lessonTextFor(lesson)}</div>`;
 
 if (needsTr) {
 const langAtCall = currentLang;
