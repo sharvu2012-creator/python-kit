@@ -401,9 +401,30 @@ aiStatus.textContent = '';
 function addAIMessage(role, content) {
 const div = document.createElement('div');
 div.className = 'ai-message';
-div.innerHTML = `<div class="role">${role === 'user' ? 'You' : 'AI Tutor'}</div><div class="content">${escapeHtml(content)}</div>`;
+const body = role === 'assistant' ? mdToHtml(content) : escapeHtml(content);
+div.innerHTML = `<div class="role">${role === 'user' ? 'You' : 'AI Tutor'}</div><div class="content">${body}</div>`;
 aiChat.appendChild(div);
 aiChat.scrollTop = aiChat.scrollHeight;
+}
+
+// safe markdown → HTML (escape first, then format)
+function mdToHtml(text) {
+let h = escapeHtml(text);
+// code blocks ```
+h = h.replace(/```[\w]*\n?([\s\S]*?)```/g, (m, c) => '<pre class="md-pre"><code>' + c.trim() + '</code></pre>');
+// inline code
+h = h.replace(/`([^`\n]+)`/g, '<code class="md-code">$1</code>');
+// bold **text**
+h = h.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+// headings # ## ###
+h = h.replace(/^#{1,3}\s+(.+)$/gm, '<span class="md-h">$1</span>');
+// bullets - or *
+h = h.replace(/^\s*[-*]\s+(.+)$/gm, '<span class="md-li">• $1</span>');
+// numbered lists 1. 2.
+h = h.replace(/^\s*(\d+)\.\s+(.+)$/gm, '<span class="md-li">$1. $2</span>');
+// newlines
+h = h.replace(/\n/g, '<br>');
+return h;
 }
 
 function escapeHtml(text) {
@@ -578,6 +599,16 @@ chatClose.addEventListener('click', closeAllPanels);
 feedbackClose.addEventListener('click', closeAllPanels);
 // ===== Feedback → FormSubmit (works for everyone: no mail app / Gmail / account needed) =====
 feedbackSend.addEventListener('click', async () => {
+// 🍯 honeypot: bots fill this invisible field, humans never see it
+const honey = $('feedbackHoney').value;
+if (honey) {
+feedbackText.value = '';
+feedbackDone.textContent = 'Thanks! Sent 💜';
+feedbackDone.hidden = false;
+setTimeout(closeAllPanels, 1500);
+return; // silently pretend success, send nothing
+}
+
 const text = feedbackText.value.trim();
 if (!text) { feedbackText.focus(); return; }
 
@@ -742,8 +773,8 @@ return c;
 }
 
 // ===== 🏫 CLASS SYSTEM (join + report + teacher roster) =====
-// 🔑 PASTE YOUR APPS SCRIPT /exec URL HERE (from gas.gs deployment):
 const CLASS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzg_dYD_o33sHEpqJsvtdUejV6N70RBRaf2weM3kxHzglHVNI2DbahJ_X2rxrhQwhJYlg/exec';
+const WRITE_KEY = 'pk-write-2026'; // 🔒 must match WRITE_KEY in gas.gs
 
 let classInfo = null;
 try { classInfo = JSON.parse(localStorage.getItem('pk_class')); } catch (e) {}
@@ -792,6 +823,7 @@ method: 'POST',
 mode: 'no-cors',
 headers: { 'Content-Type': 'text/plain' },
 body: JSON.stringify({
+key: WRITE_KEY,
 class: classInfo.code,
 student: classInfo.name,
 xp: progress.xp,
@@ -803,44 +835,37 @@ scores: progress.scores
 } catch (e) {}
 }
 
-// teacher → roster via JSONP (Apps Script CORS workaround)
-let teacherCbId = 0;
-function loadTeacherRoster() {
+// teacher → roster via secure Vercel proxy (PIN never touches Google URL or browser history)
+async function loadTeacherRoster() {
 const code = $('teacherCode').value.trim().toUpperCase();
 const pin = $('teacherPin').value.trim();
 const err = $('teacherError');
 err.hidden = true;
 
-if (!CLASS_SCRIPT_URL) {
-err.textContent = '⚙️ Setup needed: deploy gas.gs in script.google.com, then paste its URL into app.js (CLASS_SCRIPT_URL).';
-err.hidden = false;
-return;
-}
 if (!code || !pin) { err.textContent = 'Enter class code and PIN.'; err.hidden = false; return; }
 
 const wrap = $('teacherTableWrap');
 wrap.innerHTML = '<p class="teacher-empty">Loading…</p>';
 
-const cbName = '__teacherCb' + (++teacherCbId);
-const s = document.createElement('script');
-window[cbName] = (data) => {
-try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
-s.remove();
-if (!data || !data.ok) {
+try {
+const r = await fetch('/api/roster', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ classCode: code, pin: pin })
+});
+const data = await r.json();
+if (!r.ok || !data.ok) {
 err.textContent = (data && data.error) || 'Failed to load.';
 err.hidden = false;
 wrap.innerHTML = '';
 return;
 }
 renderTeacherTable(data.students || []);
-};
-s.onerror = () => {
+} catch (e) {
 err.textContent = 'Network error loading roster.';
 err.hidden = false;
 wrap.innerHTML = '';
-};
-s.src = CLASS_SCRIPT_URL + '?class=' + encodeURIComponent(code) + '&pin=' + encodeURIComponent(pin) + '&callback=' + cbName;
-document.body.appendChild(s);
+}
 }
 
 function renderTeacherTable(students) {
