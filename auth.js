@@ -60,7 +60,10 @@ async function signInEmail(email, pass) {
 
 async function signOut() { return auth.signOut(); }
 
-function currentUser() { return auth ? auth.currentUser : null; }
+function currentUser() {
+  const u = auth ? auth.currentUser : null;
+  return u ? userToProfile(u) : null; // always return the safe profile shape
+}
 
 return { init, onChange, signInGoogle, signUpEmail, signInEmail, signOut, currentUser, userToProfile, configured };
 })();
