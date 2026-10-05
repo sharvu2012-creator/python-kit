@@ -12,7 +12,7 @@
 // ============================================
 const firebaseConfig = {
   apiKey: "AIzaSyBPuwwQenvVoNdXjtn41xOoE0GsNBgNhDY",
-  authDomain: "python-kit.firebaseapp.com",
+  authDomain: "python-kit.vercel.app",
   projectId: "python-kit",
   appId: "1:339784726563:web:a73ab8351b76efa047d996"
 };

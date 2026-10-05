@@ -1,4 +1,4 @@
-const CACHE = 'python-kit-v33'; // fix: user profile shape (charAt crash)
+const CACHE = 'python-kit-v35'; // first-party auth domain + skip auth handler in cache
 const ASSETS = [
 '/', '/index.html', '/style.css', '/app.js', '/lessons.js',
 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js'
@@ -19,7 +19,9 @@ self.clients.claim();
 });
 
 self.addEventListener('fetch', e => {
+if (!e.request.url.startsWith('http')) return; // skip chrome-extension:// etc.
 if (e.request.url.includes('/api/')) return; // Never cache API calls
+if (e.request.url.includes('/__/auth/')) return; // Never cache Firebase auth handler
 e.respondWith(
 caches.open(CACHE).then(async c => {
 const hit = await c.match(e.request);
