@@ -1232,6 +1232,8 @@ $('certGenBtn').addEventListener('click', generateCertificate);
 $('certName').addEventListener('keydown', (e) => { if (e.key === 'Enter') generateCertificate(); });
 }
 
+const aiQuizCache = {}; // lessonIdx -> last questions used (avoid repeats)
+
 function openQuiz(lessonIdx) {
 const lesson = lessons[lessonIdx];
 if (!lesson.quiz || !lesson.quiz.length) return;
@@ -1248,16 +1250,49 @@ $('quizTitle').textContent = `🧪 ${lesson.title.en}`;
 $('quizResults').hidden = true;
 $('quizCodeStep').hidden = true;
 $('quizBody').hidden = false;
+
+// 🤖 try AI-generated fresh questions first (falls back to static quiz)
+loadQuizQuestions(lessonIdx).then(quiz => {
+quizState.quiz = quiz;
 renderQuizDots();
 showQuestion();
+});
+$('quizQuestion').textContent = '🤖 Generating fresh questions…';
+$('quizOptions').innerHTML = '';
+$('quizExplain').hidden = true;
+$('quizNextBtn').hidden = true;
+
 $('quizOverlay').hidden = false;
 sfx.click();
+}
+
+async function loadQuizQuestions(lessonIdx) {
+const lesson = lessons[lessonIdx];
+try {
+const avoid = (aiQuizCache[lessonIdx] || []).map(q => q.q);
+const r = await fetch('/api/quiz', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+lesson: lesson.title.en,
+topic: lesson.teacherNotes || lesson.text.en,
+avoid: avoid
+})
+});
+const data = await r.json();
+if (r.ok && data.questions && data.questions.length >= 3) {
+const quiz = data.questions.slice(0, 3);
+aiQuizCache[lessonIdx] = quiz; // remember to avoid next time
+return quiz;
+}
+} catch (e) { /* fall through to static */ }
+return lesson.quiz; // static fallback
 }
 
 function closeQuiz() { $('quizOverlay').hidden = true; }
 
 function renderQuizDots() {
-const total = lessons[quizState.lesson].quiz.length;
+const total = (quizState.quiz || lessons[quizState.lesson].quiz).length;
 const wrap = $('quizProgress');
 wrap.innerHTML = '';
 for (let i = 0; i < total; i++) {
@@ -1269,7 +1304,7 @@ wrap.appendChild(d);
 }
 
 function showQuestion() {
-const quiz = lessons[quizState.lesson].quiz;
+const quiz = quizState.quiz || lessons[quizState.lesson].quiz;
 const item = quiz[quizState.q];
 quizState.answered = false;
 renderQuizDots();
@@ -1290,7 +1325,7 @@ wrap.appendChild(btn);
 function selectOption(btn, i) {
 if (quizState.answered) return;
 quizState.answered = true;
-const item = lessons[quizState.lesson].quiz[quizState.q];
+const item = (quizState.quiz || lessons[quizState.lesson].quiz)[quizState.q];
 const right = i === item.answer;
 if (right) { quizState.mcqCorrect++; sfx.correct(); } else { sfx.wrong(); }
 
@@ -1307,14 +1342,14 @@ if (dot) dot.classList.add(right ? 'right' : 'wrong');
 const ex = $('quizExplain');
 ex.textContent = (right ? '✅ Correct! ' : '💡 ') + item.explain;
 ex.hidden = false;
-const hasMore = quizState.q < lessons[quizState.lesson].quiz.length - 1;
+const hasMore = quizState.q < (quizState.quiz || lessons[quizState.lesson].quiz).length - 1;
 const hasCode = !!lessons[quizState.lesson].codeChallenge;
 $('quizNextBtn').textContent = hasMore ? 'Next →' : hasCode ? '💻 Code Challenge →' : 'See Results →';
 $('quizNextBtn').hidden = false;
 }
 
 function nextQuestion() {
-if (quizState.q < lessons[quizState.lesson].quiz.length - 1) {
+if (quizState.q < (quizState.quiz || lessons[quizState.lesson].quiz).length - 1) {
 quizState.q++;
 showQuestion();
 } else if (lessons[quizState.lesson].codeChallenge) {
@@ -1396,7 +1431,7 @@ if (quizState.codePassed === cc.tests.length) sfx.correct();
 function showResults() {
 const lesson = lessons[quizState.lesson];
 const cc = lesson.codeChallenge;
-const total = lesson.quiz.length + (cc ? cc.tests.length : 0);
+const total = (quizState.quiz || lesson.quiz).length + (cc ? cc.tests.length : 0);
 const correct = quizState.mcqCorrect + quizState.codePassed;
 const pct = Math.round(correct / total * 100);
 const passed = correct >= Math.ceil(total * 0.66);

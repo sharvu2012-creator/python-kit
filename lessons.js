@@ -3,7 +3,7 @@ const lessons = [
 title: { pa: "ਪ੍ਰਿੰਟ ਕਰਨਾ", en: "Print Statement" },
 text: {
 pa: "ਪ੍ਰਿੰਟ ਫੰਕਸ਼ਨ ਸਕਰੀਨ 'ਤੇ ਲਿਖਣ ਲਈ ਵਰਤੀ ਜਾਂਦੀ ਹੈ। ਇਹ ਸਭ ਤੋਂ ਬੁਨਿਆਦੀ ਕਮਾਂਡ ਹੈ ਜਿਸ ਨਾਲ ਤੁਸੀਂ ਆਪਣੇ ਪ੍ਰੋਗਰਾਮ ਦਾ ਆਉਟਪੁੱਟ ਦੇਖ ਸਕਦੇ ਹੋ।",
-en: "The print function displays text on the screen. It's the most basic command that lets you see your program's output."
+en: "The print() function shows output on the screen — it's how your program talks to you. Everything inside the parentheses gets displayed. print(\"Hello\") shows Hello. ⚠️ Common mistake: forgetting the quotes — print(Hello) crashes because Python thinks Hello is a variable. 💡 Pro tip: separate multiple things with commas and print adds spaces automatically: print(\"Score:\", 100)."
 },
 starter: 'print("Hello, World!")',
 task: {
@@ -21,7 +21,7 @@ quiz: [
 title: { pa: "ਵੇਰੀਏਬਲਜ਼ (ਚਲ)", en: "Variables" },
 text: {
 pa: "ਵੇਰੀਏਬਲ ਇੱਕ ਬਾਕਸ ਹੈ ਜਿਸ ਵਿੱਚ ਤੁਸੀਂ ਮੁੱਲ ਸਟੋਰ ਕਰਦੇ ਹੋ। ਪਾਇਥਨ ਵਿੱਚ ਤੁਹਾਨੂੰ ਵੇਰੀਏਬਲ ਦਾ ਕਿਸਮ ਦੱਸਣ ਦੀ ਲੋੜ ਨਹੀਂ — ਇਹ ਆਪਣੇ आप ਸਮਝ ਜਾਂਦਾ ਹੈ।",
-en: "A variable is a box that stores a value. Python figures out the type automatically — you don't need to declare it."
+en: "A variable is a named box that stores a value — write the name, then =, then the value: score = 95. Python figures out the type automatically (number, text, list...) so you never declare types. ⚠️ Common mistake: variable names can't start with numbers or contain spaces/hyphens — 1score or my-score crash. Use snake_case: my_score. 💡 Pro tip: reassign anytime — score = 95 then score = 100 just replaces the old value."
 },
 starter: 'name = "Alex"\nage = 14\nprint("Name:", name)\nprint("Age:", age)',
 task: {
@@ -39,7 +39,7 @@ quiz: [
 title: { pa: "ਇਨਪੁਟ ਲੈਣਾ", en: "Getting Input" },
 text: {
 pa: "input() ਫੰਕਸ਼ਨ ਵਰਤੋਂਕਾਰ ਤੋਂ ਜਾਣਕਾਰੀ ਲੈਂਦੀ ਹੈ। ਇਹ ਹਮੇਸ਼ਾ ਇੱਕ ਸਟ੍ਰਿੰਗ ਵਾਪਸ ਕਰਦੀ ਹੈ, ਇਸ ਲਈ ਗਿਣਤੀ ਲਈ int() ਵਿੱਚ ਬਦਲੋ।",
-en: "input() gets text from the user. It always returns a string, so use int() to convert for math."
+en: "input() pauses your program and waits for the user to type something, then gives it back as a string (text) — ALWAYS a string, even if they type a number. age = input(\"Age? \") gives you \"15\" (text), not 15 (number). ⚠️ The #1 beginner bug: doing math with that string — \"15\" + 1 crashes! Convert first: age = int(input(\"Age? \")). 💡 Pro tip: the text inside input() is the prompt shown to the user — make it friendly."
 },
 starter: 'name = input("Your name: ")\nage = int(input("Your age: "))\nprint("Hi", name, "! Next year you will be", age + 1)',
 task: {
@@ -57,7 +57,7 @@ quiz: [
 title: { pa: "ਜੇ/ਨਹੀਂ (If/Else)", en: "If / Else" },
 text: {
 pa: "if ਅਤੇ else ਨਾਲ ਤੁਸੀਂ ਫੈਸਲੇ ਲੈ ਸਕਦੇ ਹੋ। ਜੇ ਸ਼ਰਤ ਸਹੀ ਹੈ ਤਾਂ if ਬਲਾਕ ਚੱਲਦਾ ਹੈ, ਨਹੀਂ ਤਾਂ else। ਡੋਂਗਾ ਲਗਾਉਣਾ (ਇੰਡੈਂਟੇਸ਼ਨ) ਜ਼ਰੂਰੀ ਹੈ।",
-en: "if and else let your program make decisions. If the condition is true, the if block runs; otherwise else runs. Indentation matters!"
+en: "if lets your program make decisions: it runs its block only when the condition is True, and else catches everything else. The indented lines below belong to the if — Python uses 4 spaces of indentation to know what's inside. ⚠️ Common mistake: using = (assign) instead of == (compare) in conditions — if age = 18 is an error. 💡 Pro tip: chain choices with elif: if A... elif B... else... for multiple paths."
 },
 starter: 'age = int(input("Age: "))\nif age >= 18:\n    print("You are an adult")\nelse:\n    print("You are a minor")',
 task: {
@@ -75,7 +75,7 @@ quiz: [
 title: { pa: "ਲੂਪ (ਲੁਪ)", en: "Loops" },
 text: {
 pa: "for ਲੁਪ ਇੱਕ ਸੂਚੀ 'ਤੇ ਜਾਂ ਰੇਂਜ 'ਤੇ ਚੱਲਦਾ ਹੈ। while ਲੁਪ ਤਦ ਤੱਕ ਚੱਲਦਾ ਹੈ ਜਦੋਂ ਤੱਕ ਸ਼ਰਤ ਸਹੀ ਹੈ।",
-en: "for loops iterate over a list or range. while loops run as long as a condition is true."
+en: "Loops repeat code without copy-pasting. for loops go through items — for i in range(5) runs 5 times with i = 0,1,2,3,4. while loops keep going while a condition is True — like repeating until done. ⚠️ Common mistakes: range(5) starts at 0, not 1; and forgetting to change the while condition creates an infinite loop (Ctrl+C to stop it). 💡 Pro tip: use break to exit a loop early and continue to skip to the next round."
 },
 starter: 'for i in range(5):\n    print("Count:", i)\n\nprint("---")\n\ncount = 0\nwhile count < 3:\n    print("While:", count)\n    count += 1',
 task: {
@@ -93,7 +93,7 @@ quiz: [
 title: { pa: "ਸੂਚੀਆਂ (Lists)", en: "Lists" },
 text: {
 pa: "ਸੂਚੀ ਇੱਕ ਹੀ ਵੇਰੀਏਬਲ ਵਿੱਚ ਕਈ ਚੀਜ਼ਾਂ ਰੱਖਣ ਦਾ ਤਰੀਕਾ ਹੈ। ਹਰ ਚੀਜ਼ ਦਾ ਇੱਕ ਨੰਬਰ (ਇੰਡੈਕਸ) ਹੁੰਦਾ ਹੈ ਜੋ 0 ਤੋਂ ਸ਼ੁਰੂ ਹੁੰਦਾ ਹੈ।",
-en: "A list stores many items in one variable. Each item has a position number (index) starting at 0. Lists can grow, shrink, and change."
+en: "A list stores many items in one variable using square brackets: scores = [90, 75, 88]. Every item has a position number (index) starting at 0 — scores[0] is 90. Lists grow and change: append() adds, remove() deletes. ⚠️ Common mistake: asking for an index that doesn't exist — scores[3] on a 3-item list crashes (indexes are 0,1,2). 💡 Pro tip: scores[-1] grabs the LAST item without counting."
 },
 starter: 'fruits = ["apple", "banana", "mango"]\nprint(fruits[0])\nfruits.append("orange")\nprint(fruits)\nprint("Total:", len(fruits))',
 task: {
@@ -111,7 +111,7 @@ quiz: [
 title: { pa: "ਸਟ੍ਰਿੰਗਜ਼ (Strings)", en: "Strings & f-strings" },
 text: {
 pa: "ਸਟ੍ਰਿੰਗ ਅੱਖਰਾਂ ਦੀ ਲੜੀ ਹੈ। f-string ਨਾਲ ਤੁਸੀਂ ਵੇਰੀਏਬਲ ਨੂੰ ਸਿੱਧਾ ਟੈਕਸਟ ਵਿੱਚ ਪਾ ਸਕਦੇ ਹੋ।",
-en: "A string is a sequence of characters. f-strings let you drop variables right into text. Strings also come with handy methods like upper(), lower(), and len()."
+en: "A string is text in quotes — \"hello\" is 5 characters. Strings come with methods: upper() shouts, lower() whispers, len() counts characters. The game-changer is f-strings: put f before the quotes and drop variables inside {} — name = \"Sam\", then f\"Hi {name}\" gives \"Hi Sam\". ⚠️ Common mistake: forgetting the f — \"Hi {name}\" prints literally Hi {name}. 💡 Pro tip: f\"Next year: {age + 1}\" even does math inside."
 },
 starter: 'name = "Sam"\nage = 15\nprint(f"Hi {name}, you are {age} years old")\nprint(name.upper())\nprint(len(name))',
 task: {
@@ -129,7 +129,7 @@ quiz: [
 title: { pa: "ਫੰਕਸ਼ਨ (Functions)", en: "Functions" },
 text: {
 pa: "ਫੰਕਸ਼ਨ ਕੋਡ ਦਾ ਇੱਕ ਛੋਟਾ ਮਸ਼ੀਨ ਹੈ — ਇੱਕ ਵਾਰ ਲਿਖੋ, ਬਾਰ-ਬਾਰ ਵਰਤੋ। def ਨਾਲ ਬਣਾਉਂਦੇ ਹਾਂ ਅਤੇ ਨਾਮ ਨਾਲ ਬੁਲਾਉਂਦੇ ਹਾਂ।",
-en: "A function is a mini-machine for code — write it once with def, use it many times by calling its name. Functions can take inputs (parameters) and send back results with return."
+en: "A function is a mini-machine for code: write it once with def, use it forever by calling its name. It takes inputs (parameters), does its job, and can hand back a result with return. def double(n): return n * 2 — now double(5) gives 10 anywhere. ⚠️ Common mistake: calling a function without parentheses — double just names it, double() RUNS it. 💡 Pro tip: return is what makes functions useful — print shows text to humans, return gives values back to your code."
 },
 starter: 'def greet(name):\n    return f"Hello, {name}!"\n\nprint(greet("Alex"))\nprint(greet("Sam"))',
 task: {
@@ -147,7 +147,7 @@ quiz: [
 title: { pa: "ਡਿਕਸ਼ਨਰੀ (Dictionaries)", en: "Dictionaries" },
 text: {
 pa: "ਡਿਕਸ਼ਨਰੀ key:value ਜੋੜੇ ਰੱਖਦੀ ਹੈ — ਜਿਵੇਂ ਸ਼ਬਦਕੋਸ਼ ਵਿੱਚ ਹਰ ਸ਼ਬਦ ਦਾ ਇੱਕ ਅਰਥ ਹੁੰਦਾ ਹੈ।",
-en: "A dictionary stores key:value pairs — like a real dictionary where every word (key) has a meaning (value). Look things up by their key, not by position."
+en: "A dictionary stores key:value pairs in curly braces — like a real dictionary where every word (key) has a meaning (value): person = {\"name\": \"Alex\", \"age\": 14}. Look things up by key, never by position: person[\"age\"] gives 14. Add new pairs by just assigning: person[\"city\"] = \"Delhi\". ⚠️ Common mistake: using a key that doesn't exist crashes — check with \"age\" in person first. 💡 Pro tip: keys must be unique, values can be anything — even lists or other dictionaries."
 },
 starter: 'student = {"name": "Alex", "age": 14, "grade": "A"}\nprint(student["name"])\nstudent["city"] = "Delhi"\nprint(student)',
 task: {
@@ -165,7 +165,7 @@ quiz: [
 title: { pa: "ਮੋਡੀਊਲ ਅਤੇ ਫਾਇਨਲ ਚੁਣੌਤੀ", en: "Modules & Final Challenge" },
 text: {
 pa: "ਮੋਡੀਊਲ ਦੂਜਿਆਂ ਦੇ ਤਿਆਰ ਕੋਡ ਨੂੰ ਵਰਤਣ ਦਾ ਤਰੀਕਾ ਹੈ — import ਕਰੋ ਅਤੇ ਦੁਨੀਆਂ ਦੀ ਸ਼ਕਤੀ ਤੁਹਾਡੇ ਹੱਥ ਵਿੱਚ।",
-en: "Modules let you use code others already wrote — just import and go. Python has hundreds built in: random for games, math for calculations, datetime for dates. This is your final challenge: combine everything you've learned!"
+en: "Modules are pre-built toolboxes written by other people — import one and its powers are yours. import random for games, import math for calculations, import datetime for dates. Python ships with hundreds: no installing, no setup. This is your final challenge — combine variables, input, if/else, loops, functions, and modules into something real. ⚠️ Common mistake: calling random.randint() without import random first. 💡 Pro tip: you're now officially a Python programmer — the best way forward is building tiny projects you care about. 🎉"
 },
 starter: 'import random\n\nsecret = random.randint(1, 10)\nguess = int(input("Guess 1-10: "))\n\nif guess == secret:\n    print("You win! 🎉")\nelse:\n    print(f"Nope, it was {secret}")',
 task: {
