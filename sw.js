@@ -1,4 +1,4 @@
-const CACHE = 'python-kit-v31'; // fix: sign-in guard + effects toggle works
+const CACHE = 'python-kit-v32'; // fix: google sign-in via redirect (cookie-block safe)
 const ASSETS = [
 '/', '/index.html', '/style.css', '/app.js', '/lessons.js',
 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js'

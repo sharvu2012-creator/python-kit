@@ -15,6 +15,8 @@ function init() {
   try {
     if (!app) { app = firebase.initializeApp(firebaseConfig); auth = app.auth(); }
     auth.onAuthStateChanged(u => listeners.forEach(f => f(userToProfile(u))));
+    // handle users returning from Google redirect sign-in
+    auth.getRedirectResult().catch(e => console.warn('redirect sign-in error:', e));
     return true;
   } catch (e) {
     console.error('Firebase init failed', e);
@@ -42,7 +44,8 @@ function ensureAuth() {
 async function signInGoogle() {
   ensureAuth();
   const provider = new firebase.auth.GoogleAuthProvider();
-  return auth.signInWithPopup(provider);
+  provider.setCustomParameters({ prompt: 'select_account' });
+  return auth.signInWithRedirect(provider); // redirect flow — immune to third-party cookie blocks
 }
 
 async function signUpEmail(email, pass) {
