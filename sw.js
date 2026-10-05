@@ -1,4 +1,4 @@
-const CACHE = 'python-kit-v35'; // first-party auth domain + skip auth handler in cache
+const CACHE = 'python-kit-v36'; // teacher-created classes with own PINs
 const ASSETS = [
 '/', '/index.html', '/style.css', '/app.js', '/lessons.js',
 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js'

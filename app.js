@@ -337,6 +337,7 @@ l.classList.toggle('active', l.dataset.view === name);
 });
 closeMenu();
 if (name === 'roadmap') renderRoadmap();
+if (name === 'teacher') renderTeacherView();
 window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -978,6 +979,97 @@ reportProgress();
 });
 $('teacherLoadBtn').addEventListener('click', loadTeacherRoster);
 $('teacherPin').addEventListener('keydown', (e) => { if (e.key === 'Enter') loadTeacherRoster(); });
+setupTeacherCreate();
+}
+
+// ===== 🏗️ TEACHER: create own class + own PIN =====
+function setupTeacherCreate() {
+$('createClassBtn').addEventListener('click', createClass);
+$('newClassPin').addEventListener('keydown', (e) => { if (e.key === 'Enter') createClass(); });
+}
+
+function renderTeacherView() {
+const u = AuthKit.currentUser();
+const note = $('teacherAuthNote');
+const card = $('createClassCard');
+if (u) {
+note.innerHTML = '👤 Signed in as <b>' + escapeHtml(u.email) + '</b> — create your class below.';
+card.hidden = false;
+loadMyClasses();
+} else {
+note.innerHTML = '👤 <b>Sign in</b> (top-right) to create your own class with your own PIN — or view any roster below with its class PIN.';
+card.hidden = true;
+$('myClassesWrap').innerHTML = '';
+}
+}
+
+async function createClass() {
+const u = AuthKit.currentUser();
+if (!u) { showTrToastText('Sign in first (top-right)'); return; }
+const code = $('newClassCode').value.trim().toUpperCase();
+const pin = $('newClassPin').value;
+const msg = $('createClassMsg');
+msg.hidden = true;
+
+if (!code || code.length < 3) { msg.textContent = 'Class code must be 3+ characters (letters/numbers).'; msg.hidden = false; return; }
+if (!pin || pin.length < 4) { msg.textContent = 'PIN must be 4+ characters.'; msg.hidden = false; return; }
+
+$('createClassBtn').disabled = true;
+try {
+const r = await fetch('/api/class', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ action: 'create', class: code, pin: pin, uid: u.uid, email: u.email })
+});
+const data = await r.json();
+if (data.ok) {
+showTrToastText(data.existed ? '🏫 Class ' + code + ' is yours already!' : '🎉 Class ' + code + ' created! Share the code with students.');
+$('newClassCode').value = '';
+$('newClassPin').value = '';
+loadMyClasses();
+} else {
+msg.textContent = data.error || 'Failed to create class.';
+msg.hidden = false;
+}
+} catch (e) {
+msg.textContent = 'Network error — try again.';
+msg.hidden = false;
+} finally {
+$('createClassBtn').disabled = false;
+}
+}
+
+async function loadMyClasses() {
+const u = AuthKit.currentUser();
+if (!u) return;
+const wrap = $('myClassesWrap');
+try {
+const r = await fetch('/api/class', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ action: 'list', uid: u.uid, email: u.email })
+});
+const data = await r.json();
+if (!data.ok || !data.classes || !data.classes.length) {
+wrap.innerHTML = '<p class="teacher-empty">No classes yet — create your first one above.</p>';
+return;
+}
+let html = '<h3 class="my-classes-title">Your classes</h3><div class="class-chips">';
+data.classes.forEach(c => {
+html += '<button class="class-chip" data-code="' + escapeHtml(c.code) + '">🏫 ' + escapeHtml(c.code) + '</button>';
+});
+html += '</div>';
+wrap.innerHTML = html;
+wrap.querySelectorAll('.class-chip').forEach(chip => {
+chip.addEventListener('click', () => {
+$('teacherCode').value = chip.dataset.code;
+$('teacherPin').focus();
+showTrToastText('Enter PIN for ' + chip.dataset.code);
+});
+});
+} catch (e) {
+wrap.innerHTML = '<p class="teacher-empty">Could not load your classes.</p>';
+}
 }
 
 // student → teacher: report progress (fire and forget)

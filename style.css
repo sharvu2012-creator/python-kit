@@ -994,6 +994,44 @@ border: 1px solid rgba(251,113,133,0.35);
 .btn-danger:hover { background: rgba(251,113,133,0.22); }
 
 /* ============================================
+   🏗️ CREATE CLASS + MY CLASSES
+   ============================================ */
+.teacher-note {
+color: var(--text-muted); font-size: 13.5px; line-height: 1.6;
+margin-bottom: 16px; text-align: center;
+}
+.teacher-note b { color: var(--text); }
+.create-class {
+background: rgba(139,92,246,0.08);
+border: 1px solid var(--border);
+border-radius: var(--radius);
+padding: 20px; margin-bottom: 18px;
+}
+.create-class h3 { margin-bottom: 12px; }
+.my-classes-title {
+font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
+letter-spacing: 0.1em; color: var(--text-muted);
+margin: 16px 0 10px;
+}
+.class-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.class-chip {
+background: rgba(139,92,246,0.12);
+border: 1px solid rgba(167,139,250,0.3);
+color: var(--primary-hover);
+font-size: 13px; font-weight: 700;
+padding: 8px 16px; border-radius: 999px;
+cursor: pointer; transition: var(--transition);
+}
+.class-chip:hover {
+background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+color: #fff; border-color: transparent;
+transform: translateY(-1px);
+box-shadow: 0 4px 12px rgba(139,92,246,0.35);
+}
+[data-theme="light"] .class-chip { color: var(--primary-strong); }
+[data-theme="light"] .class-chip:hover { color: #fff; }
+
+/* ============================================
    🎓 CERTIFICATE MODAL
    ============================================ */
 .cert-card { width: min(420px, 100%); }

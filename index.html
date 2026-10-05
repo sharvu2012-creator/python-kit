@@ -251,9 +251,22 @@
 <div class="teacher-head reveal">
 <h2>🏫 Teacher Dashboard</h2>
 <p class="teacher-sub">See your students' progress live — XP, lessons completed, streaks.</p>
+<p class="teacher-note" id="teacherAuthNote">👤 <b>Sign in</b> (top-right) to create your own class with your own PIN — or view any roster below with its class PIN.</p>
+
+<div class="create-class" id="createClassCard" hidden>
+<h3>➕ Create your class</h3>
+<div class="teacher-form">
+<input type="text" id="newClassCode" class="teacher-input" placeholder="Class code (e.g. CLASS7A)" maxlength="20">
+<input type="password" id="newClassPin" class="teacher-input" placeholder="Your PIN (4+ chars)" maxlength="30">
+<button class="btn btn-primary" id="createClassBtn">Create Class</button>
+</div>
+<p class="teacher-error" id="createClassMsg" hidden></p>
+<div id="myClassesWrap"></div>
+</div>
+
 <div class="teacher-form">
 <input type="text" id="teacherCode" class="teacher-input" placeholder="Class code (e.g. CLASS7A)">
-<input type="password" id="teacherPin" class="teacher-input" placeholder="Teacher PIN">
+<input type="password" id="teacherPin" class="teacher-input" placeholder="Class PIN">
 <button class="btn btn-primary" id="teacherLoadBtn">Load Roster</button>
 </div>
 <p class="teacher-error" id="teacherError" hidden></p>
