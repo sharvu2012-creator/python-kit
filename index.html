@@ -29,6 +29,7 @@
 <h1><span class="logo-bubble">🐍</span> <span class="app-name">Python Kit</span></h1>
 </div>
 <div class="topbar-actions">
+<button class="user-btn" id="userBtn" aria-label="Account"><span id="userBtnIcon">👤</span><span id="userBtnText" class="user-btn-text" hidden></span></button>
 <span class="streak-badge" id="streakBadge" hidden>🔥 <span id="streakCount">0</span></span>
 <button id="installBtn" class="btn btn-primary btn-install" data-i18n="install" hidden>📲 Install</button>
 <select id="langSelect" aria-label="Language">
@@ -61,6 +62,7 @@
 <a class="menu-link" data-view="roadmap" data-i18n="roadmap">🗺️ Roadmap</a>
 <a class="menu-link" data-view="lessons" data-i18n="lessons">📚 Lessons</a>
 <a class="menu-link" data-view="teacher">🏫 Teacher</a>
+<a class="menu-link" data-view="settings">⚙️ Settings</a>
 </div>
 <div class="menu-foot">Made with 💜 for learners</div>
 </nav>
@@ -188,6 +190,60 @@
 </div>
 </div>
 <div class="road-path" id="roadPath"></div>
+</section>
+
+<!-- ===== VIEW: SETTINGS ===== -->
+<section id="view-settings" class="view" hidden>
+<div class="settings-head reveal">
+<h2>⚙️ Settings</h2>
+</div>
+<div class="settings-grid">
+<div class="settings-card reveal">
+<h3>👤 Account</h3>
+<div id="authStatus" class="auth-status">Not signed in</div>
+<div id="authSignedOut">
+<button class="btn btn-primary btn-block" id="googleSignInBtn">🔵 Continue with Google</button>
+<div class="auth-divider"><span>or with email</span></div>
+<input type="email" id="authEmail" class="cert-name" placeholder="Email" autocomplete="email">
+<input type="password" id="authPass" class="cert-name" placeholder="Password" autocomplete="current-password">
+<button class="btn btn-secondary btn-block" id="emailAuthBtn">Sign in / Register</button>
+<p class="auth-hint">No account? Just enter email + password and press the button — it creates one automatically.</p>
+</div>
+<div id="authSignedIn" hidden>
+<div class="auth-profile" id="authProfile"></div>
+<button class="btn btn-secondary btn-block" id="signOutBtn">Sign out</button>
+</div>
+<p class="auth-error" id="authError" hidden></p>
+</div>
+<div class="settings-card reveal">
+<h3>🎨 Appearance</h3>
+<div class="setting-row"><span>Theme</span>
+<div class="seg-ctl" id="themeSeg">
+<button class="seg-btn" data-theme="dark">🌙 Dark</button>
+<button class="seg-btn" data-theme="light">☀️ Light</button>
+</div></div>
+<div class="setting-row"><span>Effects</span>
+<div class="seg-ctl" id="fxSeg">
+<button class="seg-btn" data-fx="on">🎆 On</button>
+<button class="seg-btn" data-fx="off">✨ Off</button>
+</div></div>
+<p class="setting-hint">Effects = fireworks &amp; celebrations. Off = calmer, better for low-end devices.</p>
+</div>
+<div class="settings-card reveal">
+<h3>🔔 Notifications</h3>
+<div class="setting-row"><span>Browser notifications</span>
+<button class="btn btn-secondary" id="notifBtn">Enable</button></div>
+<p class="setting-hint" id="notifStatus">Off — you'll only see in-app toasts.</p>
+</div>
+<div class="settings-card reveal">
+<h3>💾 My Data</h3>
+<div class="setting-row"><span>Progress</span>
+<button class="btn btn-secondary" id="exportBtn">⬇ Export JSON</button></div>
+<div class="setting-row"><span>Reset everything</span>
+<button class="btn btn-danger" id="resetBtn">🗑 Reset</button></div>
+<p class="setting-hint">Reset clears XP, streaks, lessons and class info from this device.</p>
+</div>
+</div>
 </section>
 
 <!-- ===== VIEW: TEACHER ===== -->
@@ -329,6 +385,24 @@
 </div>
 </div>
 
+<!-- ===== AUTH MODAL ===== -->
+<div class="quiz-overlay" id="authModal" hidden>
+<div class="quiz-card cert-card" role="dialog" aria-modal="true">
+<div class="quiz-head">
+<h3>👤 Sign in</h3>
+<button class="icon-btn" id="authModalClose" aria-label="Close">✕</button>
+</div>
+<div class="cert-body">
+<button class="btn btn-primary btn-block" id="googleSignInBtn2">🔵 Continue with Google</button>
+<div class="auth-divider"><span>or with email</span></div>
+<input type="email" id="authEmail2" class="cert-name" placeholder="Email" autocomplete="email">
+<input type="password" id="authPass2" class="cert-name" placeholder="Password" autocomplete="current-password">
+<button class="btn btn-secondary btn-block" id="emailAuthBtn2">Sign in / Register</button>
+<p class="auth-error" id="authError2" hidden></p>
+</div>
+</div>
+</div>
+
 <!-- ===== CERTIFICATE MODAL ===== -->
 <div class="quiz-overlay" id="certOverlay" hidden>
 <div class="quiz-card cert-card" role="dialog" aria-modal="true">
@@ -348,6 +422,10 @@
 <canvas id="fxCanvas" aria-hidden="true"></canvas>
 
 <!-- Pyodide -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="firebase-config.js"></script>
+<script src="auth.js"></script>
 <script src="https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js"></script>
 <script src="lessons.js"></script>
 <script src="translate.js"></script>

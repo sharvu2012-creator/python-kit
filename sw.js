@@ -1,4 +1,4 @@
-const CACHE = 'python-kit-v27'; // markdown-rendered AI responses
+const CACHE = 'python-kit-v30'; // auth + settings dashboard
 const ASSETS = [
 '/', '/index.html', '/style.css', '/app.js', '/lessons.js',
 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js'

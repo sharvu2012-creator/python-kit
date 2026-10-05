@@ -1,3 +1,161 @@
+// ===== 👤 AUTH + SETTINGS =====
+function updateUserUI() {
+const u = AuthKit.currentUser();
+const btn = $('userBtn');
+if (!btn) return;
+if (u) {
+$('userBtnIcon').textContent = u.photo ? '' : u.name.charAt(0).toUpperCase();
+if (u.photo) {
+$('userBtnIcon').innerHTML = '<img class="avatar" src="' + u.photo + '" alt="">';
+}
+$('userBtnText').textContent = u.name;
+$('userBtnText').hidden = false;
+} else {
+$('userBtnIcon').textContent = '👤';
+$('userBtnText').hidden = true;
+}
+}
+
+function showAuthError(el, msg) {
+el.textContent = msg;
+el.hidden = false;
+setTimeout(() => { el.hidden = true; }, 5000);
+}
+
+function wireAuthModal() {
+const modal = $('authModal');
+$('userBtn').addEventListener('click', () => {
+if (AuthKit.currentUser()) { showView('settings'); return; }
+modal.hidden = false;
+});
+$('authModalClose').addEventListener('click', () => { modal.hidden = true; });
+modal.addEventListener('click', (e) => { if (e.target === modal) modal.hidden = true; });
+
+const googleFlow = async (errEl) => {
+errEl.hidden = true;
+try { await AuthKit.signInGoogle(); }
+catch (e) { showAuthError(errEl, 'Google sign-in failed: ' + (e.message || e)); }
+};
+$('googleSignInBtn').addEventListener('click', () => googleFlow($('authError')));
+$('googleSignInBtn2').addEventListener('click', () => googleFlow($('authError2')));
+
+const emailFlow = async (emailEl, passEl, errEl) => {
+errEl.hidden = true;
+const email = emailEl.value.trim();
+const pass = passEl.value;
+if (!email || !pass) { showAuthError(errEl, 'Enter email and password.'); return; }
+try {
+await AuthKit.signUpEmail(email, pass); // creates account if new, signs in if existing
+} catch (e) {
+showAuthError(errEl, e.message || 'Sign-in failed.');
+}
+};
+$('emailAuthBtn').addEventListener('click', () => emailFlow($('authEmail'), $('authPass'), $('authError')));
+$('emailAuthBtn2').addEventListener('click', () => emailFlow($('authEmail2'), $('authPass2'), $('authError2')));
+}
+
+function renderAuthStatus() {
+const u = AuthKit.currentUser();
+const status = $('authStatus');
+const out = $('authSignedOut');
+const inn = $('authSignedIn');
+if (u) {
+status.textContent = 'Signed in';
+status.style.color = 'var(--secondary)';
+out.hidden = true;
+inn.hidden = false;
+const prof = $('authProfile');
+prof.innerHTML = (u.photo ? '<img src="' + u.photo + '" alt="">' : '<div class="ap-fallback">' + u.name.charAt(0).toUpperCase() + '</div>') +
+'<div><div class="ap-name">' + escapeHtml(u.name) + '</div><div class="ap-email">' + escapeHtml(u.email) + '</div></div>';
+} else {
+status.textContent = 'Not signed in';
+status.style.color = '';
+out.hidden = false;
+inn.hidden = true;
+}
+}
+
+function wireSettings() {
+// theme segmented control
+const themeSeg = $('themeSeg');
+themeSeg.querySelectorAll('.seg-btn').forEach(btn => {
+btn.addEventListener('click', () => {
+setTheme(btn.dataset.theme);
+themeSeg.querySelectorAll('.seg-btn').forEach(b => b.classList.toggle('active', b === btn));
+});
+});
+// effects toggle
+const fxSeg = $('fxSeg');
+const syncFx = () => {
+fxSeg.querySelectorAll('.seg-btn').forEach(b => b.classList.toggle('active', b.dataset.fx === (localStorage.getItem('pk_fx') || 'on')));
+};
+fxSeg.querySelectorAll('.seg-btn').forEach(btn => {
+btn.addEventListener('click', () => {
+localStorage.setItem('pk_fx', btn.dataset.fx);
+syncFx();
+showTrToastText(btn.dataset.fx === 'on' ? '🎆 Effects on' : '✨ Effects off');
+});
+});
+syncFx();
+
+// notifications
+const notifBtn = $('notifBtn');
+const notifStatus = $('notifStatus');
+const syncNotif = () => {
+if (!('Notification' in window)) {
+notifStatus.textContent = 'Not supported in this browser.';
+notifBtn.disabled = true;
+return;
+}
+if (Notification.permission === 'granted') {
+notifStatus.textContent = 'On — you will get streak reminders while the site is open.';
+notifBtn.textContent = 'Disable';
+} else if (Notification.permission === 'denied') {
+notifStatus.textContent = 'Blocked by browser — enable it in site settings.';
+notifBtn.disabled = true;
+} else {
+notifStatus.textContent = 'Off — you will only see in-app toasts.';
+notifBtn.textContent = 'Enable';
+}
+};
+notifBtn.addEventListener('click', async () => {
+if (Notification.permission === 'default') {
+await Notification.requestPermission();
+}
+syncNotif();
+});
+syncNotif();
+
+// export
+$('exportBtn').addEventListener('click', () => {
+const data = {
+exportedAt: new Date().toISOString(),
+progress: progress,
+class: classInfo
+};
+const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+const a = document.createElement('a');
+a.href = URL.createObjectURL(blob);
+a.download = 'python-kit-progress.json';
+a.click();
+URL.revokeObjectURL(a.href);
+showTrToastText('⬇ Progress exported');
+});
+
+// reset
+$('resetBtn').addEventListener('click', () => {
+if (!confirm('Reset ALL progress, streaks and class info on this device?')) return;
+['pk_progress', 'pk_streak', 'pk_class'].forEach(k => localStorage.removeItem(k));
+location.reload();
+});
+
+// sign out
+$('signOutBtn').addEventListener('click', async () => {
+await AuthKit.signOut();
+showTrToastText('Signed out');
+});
+}
+
 // ===== App State =====
 let currentLessonIndex = 0;
 let currentLang = 'en';
@@ -145,6 +303,12 @@ setupInstall();
 setupFab();
 setupQuiz();
 setupClass();
+wireAuthModal();
+wireSettings();
+AuthKit.init();
+AuthKit.onChange(() => { updateUserUI(); renderAuthStatus(); });
+updateUserUI();
+renderAuthStatus();
 await initPyodide();
 loadLesson(0);
 showView('dashboard');
@@ -774,7 +938,7 @@ return c;
 
 // ===== 🏫 CLASS SYSTEM (join + report + teacher roster) =====
 const CLASS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzg_dYD_o33sHEpqJsvtdUejV6N70RBRaf2weM3kxHzglHVNI2DbahJ_X2rxrhQwhJYlg/exec';
-const WRITE_KEY = 'pk-write-2026'; // 🔒 must match WRITE_KEY in gas.gs
+
 
 let classInfo = null;
 try { classInfo = JSON.parse(localStorage.getItem('pk_class')); } catch (e) {}
@@ -818,14 +982,13 @@ $('teacherPin').addEventListener('keydown', (e) => { if (e.key === 'Enter') load
 function reportProgress() {
 if (!CLASS_SCRIPT_URL || !classInfo || !classInfo.code || !classInfo.name) return;
 try {
-fetch(CLASS_SCRIPT_URL, {
+fetch('/api/progress', {
 method: 'POST',
-mode: 'no-cors',
-headers: { 'Content-Type': 'text/plain' },
+headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({
-key: WRITE_KEY,
 class: classInfo.code,
 student: classInfo.name,
+identity: AuthKit.currentUser() ? { email: AuthKit.currentUser().email, name: AuthKit.currentUser().name } : null,
 xp: progress.xp,
 done: progress.completed.length,
 streak: Number(($('streakCount') || {}).textContent) || 0,
