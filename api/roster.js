@@ -1,6 +1,19 @@
-// 🔒 Teacher roster proxy — PIN checked server-side, never exposed to browsers
+// 🔒 Teacher roster proxy — forwards class+PIN to Apps Script (validates per-class PIN).
+// Rate-limited to slow brute-force PIN guessing.
+const GAS_URL = process.env.GAS_URL;
+
+const hits = new Map();
+const LIMIT = 30, WINDOW = 3600e3; // 30 roster loads/hour per IP
+function rateLimited(ip) {
+const now = Date.now();
+const arr = (hits.get(ip) || []).filter(t => now - t < WINDOW);
+if (arr.length >= LIMIT) return true;
+arr.push(now);
+hits.set(ip, arr);
+return false;
+}
+
 module.exports = async (req, res) => {
-// CORS
 res.setHeader('Access-Control-Allow-Origin', '*');
 res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
 res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -12,19 +25,16 @@ if (!classCode || !pin) {
 return res.status(400).json({ error: 'Enter class code and PIN.' });
 }
 
-// dashboard PIN check (server-side env, never in browser code)
-if (pin !== process.env.TEACHER_PIN) {
-return res.status(401).json({ error: 'Wrong PIN' });
+const ip = (req.headers['x-forwarded-for'] || 'unknown').split(',')[0].trim();
+if (rateLimited(ip)) {
+return res.status(429).json({ error: 'Too many attempts — try again later.' });
 }
 
-const gasUrl = process.env.GAS_URL;
-if (!gasUrl) {
-return res.status(500).json({ error: 'Server not configured (GAS_URL missing)' });
-}
+if (!GAS_URL) return res.status(500).json({ error: 'Server not configured' });
 
 try {
-// server-to-server call to Google Apps Script (no CORS issues server-side)
-const url = gasUrl + '?class=' + encodeURIComponent(classCode) + '&pin=' + encodeURIComponent(process.env.TEACHER_PIN);
+// GAS validates the PIN against the class's own PIN (or legacy global PIN)
+const url = GAS_URL + '?class=' + encodeURIComponent(classCode) + '&pin=' + encodeURIComponent(pin);
 const r = await fetch(url);
 const data = await r.json();
 if (!r.ok) return res.status(502).json({ error: 'Backend error' });
