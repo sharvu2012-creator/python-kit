@@ -11,8 +11,8 @@
 // 5. Authentication → Settings → Authorized domains → add your Vercel domain
 // ============================================
 const firebaseConfig = {
-  apiKey: "PASTE_API_KEY",
-  authDomain: "PASTE_PROJECT.firebaseapp.com",
-  projectId: "PASTE_PROJECT_ID",
-  appId: "PASTE_APP_ID"
+  apiKey: "AIzaSyBPuwwQenvVoNdXjtn41xOoE0GsNBgNhDY",
+  authDomain: "python-kit.firebaseapp.com",
+  projectId: "python-kit",
+  appId: "1:339784726563:web:a73ab8351b76efa047d996"
 };

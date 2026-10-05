@@ -34,16 +34,24 @@ function userToProfile(u) {
 
 function onChange(cb) { listeners.push(cb); }
 
+function ensureAuth() {
+  if (!auth) { const ok = init(); if (!ok) throw new Error('Firebase not configured — paste your keys in firebase-config.js'); }
+  return auth;
+}
+
 async function signInGoogle() {
+  ensureAuth();
   const provider = new firebase.auth.GoogleAuthProvider();
   return auth.signInWithPopup(provider);
 }
 
 async function signUpEmail(email, pass) {
+  ensureAuth();
   return auth.createUserWithEmailAndPassword(email, pass);
 }
 
 async function signInEmail(email, pass) {
+  ensureAuth();
   return auth.signInWithEmailAndPassword(email, pass);
 }
 

@@ -27,6 +27,7 @@ const modal = $('authModal');
 $('userBtn').addEventListener('click', () => {
 if (AuthKit.currentUser()) { showView('settings'); return; }
 modal.hidden = false;
+$('authConfigNotice').hidden = AuthKit.configured();
 });
 $('authModalClose').addEventListener('click', () => { modal.hidden = true; });
 modal.addEventListener('click', (e) => { if (e.target === modal) modal.hidden = true; });
@@ -702,6 +703,7 @@ else { raf = null; fx.clearRect(0, 0, canvas.width, canvas.height); }
 }
 
 document.addEventListener('pointerdown', (e) => {
+if (localStorage.getItem('pk_fx') === 'off') return; // respect Effects toggle
 burst(e.clientX, e.clientY);
 sfx.firework();
 });
