@@ -28,6 +28,7 @@ $('userBtn').addEventListener('click', () => {
 if (AuthKit.currentUser()) { showView('settings'); return; }
 modal.hidden = false;
 $('authConfigNotice').hidden = AuthKit.configured();
+renderEmailFlow();
 });
 $('authModalClose').addEventListener('click', () => { modal.hidden = true; });
 modal.addEventListener('click', (e) => { if (e.target === modal) modal.hidden = true; });
@@ -39,20 +40,141 @@ catch (e) { showAuthError(errEl, 'Google sign-in failed: ' + (e.message || e)); 
 };
 $('googleSignInBtn').addEventListener('click', () => googleFlow($('authError')));
 $('googleSignInBtn2').addEventListener('click', () => googleFlow($('authError2')));
+$('openEmailFlowBtn').addEventListener('click', () => {
+modal.hidden = false;
+$('authConfigNotice').hidden = AuthKit.configured();
+renderEmailFlow();
+});
 
-const emailFlow = async (emailEl, passEl, errEl) => {
-errEl.hidden = true;
-const email = emailEl.value.trim();
-const pass = passEl.value;
-if (!email || !pass) { showAuthError(errEl, 'Enter email and password.'); return; }
-try {
-await AuthKit.signUpEmail(email, pass); // creates account if new, signs in if existing
-} catch (e) {
-showAuthError(errEl, e.message || 'Sign-in failed.');
+/* ---------- Email verification flow: 1 email → 2 verify → 3 password ---------- */
+const errEl = $('authError2');
+const panels = { s1: $('evStep1'), s2: $('evStep2'), s3: $('evStep3'), login: $('evStepLogin') };
+const chips  = { 1: $('evChip1'), 2: $('evChip2'), 3: $('evChip3') };
+let evMode = 'register';   // 'register' | 'login'
+let evEmail = '';
+let flowOpenedFromLink = false;
+
+function showPanel(name) {
+  Object.keys(panels).forEach(k => { panels[k].hidden = (k !== name); });
 }
-};
-$('emailAuthBtn').addEventListener('click', () => emailFlow($('authEmail'), $('authPass'), $('authError')));
-$('emailAuthBtn2').addEventListener('click', () => emailFlow($('authEmail2'), $('authPass2'), $('authError2')));
+function setChips(active, done) {
+  [1, 2, 3].forEach(i => {
+    chips[i].classList.toggle('active', i === active);
+    chips[i].classList.toggle('done', (done || []).indexOf(i) >= 0);
+  });
+}
+function evReset() {
+  evMode = 'register'; evEmail = ''; flowOpenedFromLink = false;
+  $('evEmail').value = ''; $('evPass').value = ''; $('evPass2').value = '';
+  $('lvEmail').value = ''; $('lvPass').value = '';
+  errEl.hidden = true;
+  showPanel('s1'); setChips(1, []);
+  $('evSwitchText').textContent = 'Already have an account?';
+  $('evSwitchLink').textContent = 'Sign in with password';
+}
+function evSwitchMode() {
+  evMode = (evMode === 'register') ? 'login' : 'register';
+  errEl.hidden = true;
+  if (evMode === 'login') {
+    showPanel('login');
+    $('evSwitchText').textContent = 'New here?';
+    $('evSwitchLink').textContent = 'Create an account';
+  } else {
+    showPanel(AuthKit.currentUser() ? 's3' : 's1');
+    setChips(AuthKit.currentUser() ? 3 : 1, AuthKit.currentUser() ? [1, 2] : []);
+    $('evSwitchText').textContent = 'Already have an account?';
+    $('evSwitchLink').textContent = 'Sign in with password';
+  }
+}
+function renderEmailFlow() {
+  // returning via an emailed link
+  if (AuthKit.isEmailLink(window.location.href)) {
+    evEmail = AuthKit.pendingEmail();
+    flowOpenedFromLink = true;
+    showPanel('s3'); setChips(3, [1, 2]);
+    $('evStep3Note').textContent = 'Email verified! Set a password so you can sign in with email + password next time.';
+    AuthKit.completeEmailLinkSignIn(evEmail).then(() => {
+      $('evStep3Note').textContent = 'Email verified! Set a password so you can sign in with email + password next time.';
+    }).catch(e => {
+      errEl.hidden = false;
+      errEl.textContent = 'That link could not be used. ' + (e.message || '') + ' — request a fresh link below.';
+      showPanel('s1'); setChips(1, []);
+    });
+    return;
+  }
+  // already verified but no password yet → jump to step 3
+  if (AuthKit.currentUser()) { showPanel('s3'); setChips(3, [1, 2]); return; }
+  evReset();
+}
+window.renderEmailFlow = renderEmailFlow;
+
+// STEP 1 — send the verification link
+$('evSendBtn').addEventListener('click', async () => {
+  errEl.hidden = true;
+  const email = $('evEmail').value.trim();
+  if (!email) { showAuthError(errEl, 'Enter your email address.'); return; }
+  $('evSendBtn').disabled = true; $('evSendBtn').textContent = 'Sending…';
+  try {
+    evEmail = await AuthKit.sendVerificationLink(email);
+    $('evSentTo').textContent = evEmail;
+    showPanel('s2'); setChips(2, [1]);
+  } catch (e) {
+    showAuthError(errEl, e.message || 'Could not send the verification link.');
+  } finally {
+    $('evSendBtn').disabled = false; $('evSendBtn').textContent = 'Send verification link →';
+  }
+});
+$('evResend').addEventListener('click', () => { showPanel('s1'); setChips(1, []); });
+$('evOpenMail').addEventListener('click', () => {
+  window.location.href = 'https://' + (evEmail.split('@')[1] || 'gmail.com');
+});
+
+// STEP 2 — user says they tapped the link
+$('evContinueBtn').addEventListener('click', async () => {
+  errEl.hidden = true;
+  $('evContinueBtn').disabled = true; $('evContinueBtn').textContent = 'Checking…';
+  try {
+    await AuthKit.completeEmailLinkSignIn(evEmail || $('evEmail').value.trim());
+    showPanel('s3'); setChips(3, [1, 2]);
+  } catch (e) {
+    showAuthError(errEl, 'Not verified yet — tap the link in your email first. ' + (e.message || ''));
+  } finally {
+    $('evContinueBtn').disabled = false; $('evContinueBtn').textContent = "I've tapped the link →";
+  }
+});
+
+// STEP 3 — set the password, account is created
+$('evSetPassBtn').addEventListener('click', async () => {
+  errEl.hidden = true;
+  const p1 = $('evPass').value, p2 = $('evPass2').value;
+  if (p1.length < 6) { showAuthError(errEl, 'Password must be at least 6 characters.'); return; }
+  if (p1 !== p2) { showAuthError(errEl, 'Passwords do not match.'); return; }
+  $('evSetPassBtn').disabled = true; $('evSetPassBtn').textContent = 'Creating…';
+  try {
+    const profile = await AuthKit.setPasswordForCurrentUser(evEmail, p1);
+    modal.hidden = true;
+    if (window.toast) window.toast('Welcome, ' + (profile.name || 'learner') + '! Account ready 🎉');
+    showView('settings');
+  } catch (e) {
+    showAuthError(errEl, e.message || 'Could not set the password.');
+  } finally {
+    $('evSetPassBtn').disabled = false; $('evSetPassBtn').textContent = 'Create account →';
+  }
+});
+
+// SIGN IN — returning user with password
+$('lvSignInBtn').addEventListener('click', async () => {
+  errEl.hidden = true;
+  const email = $('lvEmail').value.trim(), pass = $('lvPass').value;
+  if (!email || !pass) { showAuthError(errEl, 'Enter email and password.'); return; }
+  $('lvSignInBtn').disabled = true; $('lvSignInBtn').textContent = 'Signing in…';
+  try { await AuthKit.signInEmail(email, pass); modal.hidden = true; showView('settings'); }
+  catch (e) { showAuthError(errEl, e.message || 'Sign-in failed.'); }
+  finally { $('lvSignInBtn').disabled = false; $('lvSignInBtn').textContent = 'Sign in →'; }
+});
+
+$('evSwitchLink').addEventListener('click', (e) => { e.preventDefault(); evSwitchMode(); });
+renderEmailFlow();
 }
 
 function renderAuthStatus() {
@@ -308,6 +430,20 @@ wireAuthModal();
 wireSettings();
 AuthKit.init();
 AuthKit.onChange(() => { updateUserUI(); renderAuthStatus(); });
+
+// Landed from an emailed verification link — open the flow straight to the password step
+setTimeout(() => {
+  if (typeof AuthKit.isEmailLink === 'function' && AuthKit.isEmailLink(window.location.href)) {
+    const modal = $('authModal');
+    if (modal) {
+      modal.hidden = false;
+      $('authConfigNotice').hidden = true;
+      if (typeof renderEmailFlow === 'function') renderEmailFlow();
+      try { history.replaceState(null, '', window.location.pathname); } catch (e) {}
+    }
+  }
+}, 400);
+
 updateUserUI();
 renderAuthStatus();
 await initPyodide();

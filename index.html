@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Python Kit - Learn Python in Your Language</title>
 <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="pk-bot.css">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#8b5cf6">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -207,10 +206,8 @@
 <div id="authSignedOut">
 <button class="btn btn-primary btn-block" id="googleSignInBtn">🔵 Continue with Google</button>
 <div class="auth-divider"><span>or with email</span></div>
-<input type="email" id="authEmail" class="cert-name" placeholder="Email" autocomplete="email">
-<input type="password" id="authPass" class="cert-name" placeholder="Password" autocomplete="current-password">
-<button class="btn btn-secondary btn-block" id="emailAuthBtn">Sign in / Register</button>
-<p class="auth-hint">No account? Just enter email + password and press the button — it creates one automatically.</p>
+<button class="btn btn-secondary btn-block" id="openEmailFlowBtn">✉️ Sign in or create an account</button>
+<p class="auth-hint">Email sign-in verifies your address first, then asks you to set a password.</p>
 </div>
 <div id="authSignedIn" hidden>
 <div class="auth-profile" id="authProfile"></div>
@@ -410,11 +407,58 @@
 </div>
 <div class="cert-body">
 <p class="auth-hint" id="authConfigNotice" hidden>⚙️ Firebase not configured — paste your keys in firebase-config.js to enable sign-in.</p>
+
 <button class="btn btn-primary btn-block" id="googleSignInBtn2">🔵 Continue with Google</button>
 <div class="auth-divider"><span>or with email</span></div>
-<input type="email" id="authEmail2" class="cert-name" placeholder="Email" autocomplete="email">
-<input type="password" id="authPass2" class="cert-name" placeholder="Password" autocomplete="current-password">
-<button class="btn btn-secondary btn-block" id="emailAuthBtn2">Sign in / Register</button>
+
+<div class="ev-steps" id="evSteps">
+  <span class="ev-chip active" id="evChip1">1 Email</span>
+  <span class="ev-line"></span>
+  <span class="ev-chip" id="evChip2">2 Verify</span>
+  <span class="ev-line"></span>
+  <span class="ev-chip" id="evChip3">3 Password</span>
+</div>
+
+<!-- STEP 1 — enter email -->
+<div class="ev-panel" id="evStep1">
+  <p class="ev-note" id="evStep1Note">We'll email you a verification link. Once verified, you'll set your password.</p>
+  <input type="email" id="evEmail" class="cert-name" placeholder="Your email address" autocomplete="email" inputmode="email">
+  <button class="btn btn-secondary btn-block" id="evSendBtn">Send verification link →</button>
+</div>
+
+<!-- STEP 2 — check inbox -->
+<div class="ev-panel" id="evStep2" hidden>
+  <div class="ev-success">✅ Link sent to <b id="evSentTo"></b></div>
+  <p class="ev-note">Open your inbox and tap the link. Keep this page open — it will continue automatically.</p>
+  <div class="ev-row">
+    <button class="btn btn-secondary ev-flex" id="evOpenMail">📧 Open email</button>
+    <button class="btn ev-ghost ev-flex" id="evResend">Resend</button>
+  </div>
+  <button class="btn btn-primary btn-block" id="evContinueBtn">I've tapped the link →</button>
+</div>
+
+<!-- STEP 3 — set password -->
+<div class="ev-panel" id="evStep3" hidden>
+  <div class="ev-success">🎉 Email verified!</div>
+  <p class="ev-note" id="evStep3Note">Set a password so you can sign in with just email + password next time.</p>
+  <input type="password" id="evPass" class="cert-name" placeholder="New password (min 6 characters)" autocomplete="new-password">
+  <input type="password" id="evPass2" class="cert-name" placeholder="Confirm password" autocomplete="new-password">
+  <button class="btn btn-secondary btn-block" id="evSetPassBtn">Create account →</button>
+</div>
+
+<!-- SIGN IN — returning user -->
+<div class="ev-panel" id="evStepLogin" hidden>
+  <p class="ev-note">Welcome back! Sign in with your email and password.</p>
+  <input type="email" id="lvEmail" class="cert-name" placeholder="Email address" autocomplete="email">
+  <input type="password" id="lvPass" class="cert-name" placeholder="Password" autocomplete="current-password">
+  <button class="btn btn-primary btn-block" id="lvSignInBtn">Sign in →</button>
+</div>
+
+<div class="ev-switch">
+  <span id="evSwitchText">Already have an account?</span>
+  <a href="#" id="evSwitchLink">Sign in with password</a>
+</div>
+
 <p class="auth-error" id="authError2" hidden></p>
 </div>
 </div>
@@ -447,7 +491,6 @@
 <script src="lessons.js"></script>
 <script src="translate.js"></script>
 <script src="app.js"></script>
-<script src="pk-bot.js"></script>
 <script>
 if ('serviceWorker' in navigator) {
 navigator.serviceWorker.register('/sw.js').catch(() => {});

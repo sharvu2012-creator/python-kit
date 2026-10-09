@@ -1,6 +1,6 @@
-const CACHE = 'python-kit-v38'; // AI-generated quizzes + enriched lessons
+const CACHE = 'python-kit-v39'; // email verification flow
 const ASSETS = [
-'/', '/index.html', '/style.css', '/app.js', '/lessons.js',
+'/', '/index.html', '/style.css', '/app.js', '/auth.js', '/lessons.js',
 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js'
 ];
 
