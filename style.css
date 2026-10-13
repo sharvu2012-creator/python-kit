@@ -957,6 +957,12 @@ content: ''; flex: 1; height: 1px; background: var(--border);
   background: rgba(52,211,153,0.10); border: 1px solid rgba(52,211,153,0.3);
   border-radius: 10px; padding: 10px 12px; line-height: 1.5;
 }
+.ev-warn {
+  font-size: 12.5px; font-weight: 400; color: var(--text-muted);
+  background: rgba(255,196,107,0.10); border: 1px solid rgba(255,196,107,0.35);
+  border-radius: 10px; padding: 10px 12px; line-height: 1.55;
+}
+.ev-warn b { color: #d99a2b; font-weight: 700; }
 .ev-row { display: flex; gap: 8px; }
 .ev-flex { flex: 1; }
 .ev-ghost {
