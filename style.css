@@ -1215,3 +1215,132 @@ font-size: 14px; color: var(--text-muted);
 }
 .code-note code { flex-shrink: 0; }
 .code-note strong { color: var(--text); flex-shrink: 0; }
+
+/* ============================================
+   📱 MOBILE RESPONSIVENESS
+   Phone-first overrides so nothing overflows or overlaps.
+   ============================================ */
+
+/* never allow a horizontal scrollbar on phones */
+html, body { overflow-x: hidden; }
+img, video, canvas, svg, table, pre { max-width: 100%; }
+.page, .study, .lessons-content, .chat-panel, .quiz-card { overflow-wrap: break-word; }
+
+/* ---------- tablets ---------- */
+@media (max-width: 900px) {
+  .topbar { padding: 10px 14px; flex-wrap: wrap; gap: 8px; }
+  .topbar-actions { flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+  .topbar select { max-width: 130px; font-size: 12px; padding: 6px 9px; }
+
+  .sidebar { min-width: 0; width: 100%; max-width: none; position: static; }
+  .hero { padding: 24px 18px; }
+  .hero-title { font-size: 1.55rem; }
+
+  .playground-header { flex-direction: column; align-items: stretch; gap: 10px; }
+  .playground-actions { width: 100%; flex-wrap: wrap; }
+
+  .quiz-overlay { padding: 12px; }
+  .quiz-card { max-height: 92vh; }
+  .settings-grid { grid-template-columns: 1fr; }
+  .bento-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .fact-row { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+  .reason-grid { grid-template-columns: 1fr; }
+}
+
+/* ---------- phones ---------- */
+@media (max-width: 600px) {
+  /* topbar — the main overflow culprit */
+  .topbar { padding: 9px 12px; gap: 6px; }
+  .topbar-left { gap: 10px; }
+  .topbar h1 { font-size: 1.05rem; }
+  .logo-bubble { width: 30px; height: 30px; font-size: 16px; }
+  .app-name { display: none; }
+  .topbar-actions { gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .topbar select { max-width: 100px; font-size: 12px; padding: 6px 8px; }
+  .btn-install { padding: 6px 11px; font-size: 12px; }
+  .user-btn { padding: 6px 10px; font-size: 12px; }
+  .streak-badge { font-size: 12px; padding: 5px 9px; }
+
+  /* page breathing room (extra bottom for the FAB) */
+  .page { padding: 14px 12px 130px; }
+
+  /* hero + cards */
+  .hero { padding: 20px 14px; border-radius: 1.4rem; margin-bottom: 16px; }
+  .hero-title { font-size: 1.35rem; }
+  .hero-sub { font-size: 0.92rem; }
+  .bento-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .bento-card { padding: 14px; border-radius: 1.1rem; }
+  .study, .how { padding: 16px 14px; border-radius: 1.4rem; }
+  .study h3 { font-size: 1.1rem; }
+  .explanation-content { font-size: 14.5px; }
+  .lessons-content > section { padding: 14px; border-radius: 1.2rem; }
+  .lesson-item { padding: 11px 12px; }
+
+  /* roadmap: stack full-width, drop the zigzag so nodes never collide */
+  .road-path { max-width: 100%; gap: 26px; padding: 6px 0 22px; }
+  .road-node { width: 100%; }
+  .road-node:nth-child(odd), .road-node:nth-child(even) {
+    align-self: center; margin-left: 0; margin-right: 0;
+  }
+  .road-head h2 { font-size: 1.3rem; }
+  .road-stats { gap: 10px; }
+  .progress-track { width: min(200px, 55vw); }
+  .xp-badge { font-size: 13px; padding: 5px 13px; }
+
+  /* code */
+  .code-editor { font-size: 13px; min-height: 160px; }
+  .code-block { font-size: 14px; padding: 14px; }
+  .md-pre { font-size: 11.5px; }
+  .output-display { font-size: 12px; }
+
+  /* FAB + panels — full width instead of a narrow floating box */
+  .fab-wrap { right: 14px; bottom: 14px; }
+  .fab { width: 52px; height: 52px; font-size: 22px; }
+  .fab-secondary { width: 44px; height: 44px; font-size: 17px; }
+  .chat-panel { width: calc(100vw - 24px); height: min(70vh, calc(100vh - 120px)); }
+  #feedbackPanel { width: calc(100vw - 24px); }
+  .chat-head { padding: 12px 13px; }
+  .ai-chat { padding: 12px 13px; }
+
+  /* quiz / modals */
+  .quiz-overlay { padding: 10px; }
+  .quiz-card, .cert-card { width: 100%; max-height: 92vh; }
+  #quizBody, #quizCodeStep { padding: 14px 14px 18px; }
+  .quiz-q { font-size: 1rem; }
+  .quiz-opt { padding: 11px 13px; font-size: 13.5px; }
+  .quiz-stars { font-size: 36px; letter-spacing: 4px; }
+  .quiz-result-actions { flex-direction: column; }
+  .quiz-result-actions .btn { width: 100%; }
+  .cert-body { padding: 18px 14px 20px; }
+
+  /* teacher */
+  .teacher-head { padding: 18px 14px; }
+  .teacher-head h2 { font-size: 1.2rem; }
+
+  /* settings */
+  .settings-grid { grid-template-columns: 1fr; }
+  .setting-row { flex-wrap: wrap; gap: 8px; }
+
+  /* inputs at 16px so iOS Safari does not auto-zoom on focus */
+  .teacher-input, .ai-input, .cert-name, .quiz-code, .code-editor,
+  .topbar select, .field input, .field select {
+    font-size: 16px;
+  }
+
+  /* comfortable touch targets */
+  .icon-btn { padding: 9px 10px; font-size: 22px; min-width: 44px; min-height: 44px; }
+  .btn { padding: 11px 18px; }
+
+  /* toast sits above the FAB so the two never overlap */
+  .tr-toast { bottom: 92px; max-width: calc(100vw - 32px); text-align: center; }
+}
+
+/* ---------- very small phones ---------- */
+@media (max-width: 380px) {
+  .bento-grid { grid-template-columns: 1fr; }
+  .fact-row { grid-template-columns: 1fr; }
+  .usecase-grid { grid-template-columns: 1fr; }
+  .topbar select { max-width: 86px; }
+  .road-stats { flex-direction: column; }
+  .hero-title { font-size: 1.2rem; }
+}
