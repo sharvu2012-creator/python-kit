@@ -497,13 +497,25 @@ function loadState() {
 }
 
 /** Find whichever element actually scrolls — sometimes documentElement,
- *  sometimes body (when html carries overflow rules). Detects at runtime. */
+ *  sometimes body (when html carries overflow rules).
+ *  IMPORTANT: the probe must restore the original scrollTop, otherwise
+ *  just detecting the scroller would yank the page back to the top. */
+let _scrollerCache = null;
 function currentScroller() {
+  if (_scrollerCache) return _scrollerCache;
   const html = document.documentElement;
-  html.scrollTop = 1;
-  const htmlScrolls = html.scrollTop === 1;
-  html.scrollTop = 0;
-  return htmlScrolls ? html : (document.body || html);
+  const body = document.body;
+  const probe = (el) => {
+    try {
+      const before = el.scrollTop;
+      el.scrollTop = 1;
+      const canScroll = el.scrollTop === 1;
+      el.scrollTop = before;   // put it back exactly where it was
+      return canScroll;
+    } catch (e) { return false; }
+  };
+  _scrollerCache = (body && probe(body)) ? body : html;
+  return _scrollerCache;
 }
 
 function showView(name, opts) {

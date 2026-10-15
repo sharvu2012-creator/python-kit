@@ -1217,35 +1217,6 @@ font-size: 14px; color: var(--text-muted);
 .code-note strong { color: var(--text); flex-shrink: 0; }
 
 /* ============================================
-   💜 SHARVIL WATERMARK — delete this whole block
-      (plus the two divs at the top of index.html) to remove
-   ============================================ */
-#sharvilWatermark{
-  position: fixed; inset: 0; z-index: 100000;
-  pointer-events: none; user-select: none; -webkit-user-select: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='430' height='230' viewBox='0 0 430 230'%3E%3Cg font-family='Arial, Helvetica, sans-serif' font-size='26' font-weight='bold' fill='%238b5cf6' fill-opacity='0.15'%3E%3Ctext x='-30' y='70' transform='rotate(-28 0 70)'%3Emade by Sharvil ✨%3C/text%3E%3Ctext x='200' y='190' transform='rotate(-28 200 190)'%3Emade by Sharvil ✨%3C/text%3E%3Ctext x='-30' y='215' transform='rotate(-28 0 215)'%3Emade by Sharvil ✨%3C/text%3E%3C/g%3E%3C/svg%3E");
-  background-repeat: repeat;
-  mix-blend-mode: normal;
-}
-[data-theme="light"] #sharvilWatermark{ mix-blend-mode: multiply; }
-.sharvil-badge{
-  position: fixed; left: 16px; bottom: 16px; z-index: 100001;
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 10px 18px; border-radius: 999px;
-  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-  color: #fff; font-weight: 800; font-size: 13px; letter-spacing: 0.01em;
-  box-shadow: 0 8px 26px rgba(139, 92, 246, 0.55);
-  pointer-events: none; user-select: none; -webkit-user-select: none;
-  white-space: nowrap;
-}
-@media (max-width: 600px){
-  .sharvil-badge{ font-size: 11.5px; padding: 8px 14px; left: 12px; bottom: 12px; }
-}
-@media print{
-  #sharvilWatermark, .sharvil-badge{ display: none; }
-}
-
-/* ============================================
    📱 MOBILE RESPONSIVENESS
    Phone-first overrides so nothing overflows or overlaps.
    ============================================ */
