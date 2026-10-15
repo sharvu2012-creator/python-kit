@@ -448,7 +448,18 @@ updateUserUI();
 renderAuthStatus();
 await initPyodide();
 loadLesson(0);
-showView('dashboard');
+
+// Land back where you left off (view + lesson), like the temple booking page
+const saved = loadState();
+if (saved && saved.view && $('view-' + saved.view)) {
+  // restore the lesson first so the right content is on screen
+  if (typeof saved.lesson === 'number' && saved.lesson >= 0 && saved.lesson < lessons.length) {
+    loadLesson(saved.lesson);
+  }
+  showView(saved.view, { restore: true, scrollY: saved.y || 0 });
+} else {
+  showView('dashboard');
+}
 });
 
 function setupEventListeners() {
@@ -464,18 +475,79 @@ startLearningBtn.addEventListener('click', () => showView('lessons'));
 }
 
 // ===== VIEW ROUTER =====
-function showView(name) {
-document.querySelectorAll('.view').forEach(v => { v.hidden = true; });
-const target = $('view-' + name);
-if (target) target.hidden = false;
-document.querySelectorAll('.menu-link').forEach(l => {
-l.classList.toggle('active', l.dataset.view === name);
-});
-closeMenu();
-if (name === 'roadmap') renderRoadmap();
-if (name === 'teacher') renderTeacherView();
-window.scrollTo({ top: 0, behavior: 'smooth' });
+// Remembers where you were so a reload lands you back in the same place.
+const MEMORY_KEY = 'pk_state';
+
+function saveState(viewName) {
+  try {
+    const s = {
+      view: viewName,
+      lesson: (typeof currentLessonIndex === 'number') ? currentLessonIndex : 0,
+      y: Math.round(currentScroller().scrollTop),
+      t: Date.now()
+    };
+    sessionStorage.setItem(MEMORY_KEY, JSON.stringify(s));
+  } catch (e) {}
 }
+function loadState() {
+  try {
+    const raw = sessionStorage.getItem(MEMORY_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+
+/** Find whichever element actually scrolls — sometimes documentElement,
+ *  sometimes body (when html carries overflow rules). Detects at runtime. */
+function currentScroller() {
+  const html = document.documentElement;
+  html.scrollTop = 1;
+  const htmlScrolls = html.scrollTop === 1;
+  html.scrollTop = 0;
+  return htmlScrolls ? html : (document.body || html);
+}
+
+function showView(name, opts) {
+  opts = opts || {};
+  document.querySelectorAll('.view').forEach(v => { v.hidden = true; });
+  const target = $('view-' + name);
+  if (target) target.hidden = false;
+  document.querySelectorAll('.menu-link').forEach(l => {
+    l.classList.toggle('active', l.dataset.view === name);
+  });
+  closeMenu();
+  if (name === 'roadmap') renderRoadmap();
+  if (name === 'teacher') renderTeacherView();
+  saveState(name);
+  if (opts.restore) {
+    // back to exactly where you were — retry until the page is tall enough,
+    // because content may still be laying out when we restore
+    const want = opts.scrollY || 0;
+    const sc = currentScroller();
+    sc.scrollTop = want;
+    let tries = 0;
+    const iv = setInterval(() => {
+      sc.scrollTop = want;
+      if (sc.scrollTop >= want - 2 || ++tries > 25) clearInterval(iv);
+    }, 60);
+  } else {
+    currentScroller().scrollTop = 0;
+  }
+}
+
+// keep the saved scroll position in sync while you scroll
+let scrollSaveTimer = null;
+window.addEventListener('scroll', () => {
+  if (scrollSaveTimer) clearTimeout(scrollSaveTimer);
+  scrollSaveTimer = setTimeout(() => {
+    try {
+      const scroller = currentScroller();
+      const raw = sessionStorage.getItem(MEMORY_KEY);
+      const s = raw ? JSON.parse(raw) : {};
+      s.y = Math.round(currentScroller().scrollTop);
+      sessionStorage.setItem(MEMORY_KEY, JSON.stringify(s));
+    } catch (e) {}
+  }, 250);
+}, { passive: true });
 
 // ===== MENU =====
 function setupMenu() {
